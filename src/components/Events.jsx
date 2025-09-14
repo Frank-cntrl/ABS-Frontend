@@ -38,7 +38,7 @@ const Events = ({ user }) => {
                     description: "Join us for our annual welcome back event! Meet new members, reconnect with old friends, and enjoy great food and music.",
                     location: "Student Union Building, Room 201",
                     date: "2024-09-20T18:00:00Z",
-                    image: "https://via.placeholder.com/400x250/7538b0/ffffff?text=Welcome+Back"
+                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKHNHzxf_lzP3SbFSewtq-hn6XJT7N2rRgew&s"
                 },
                 {
                     id: 2,
@@ -46,7 +46,7 @@ const Events = ({ user }) => {
                     description: "Develop your leadership skills with interactive workshops and guest speakers from industry professionals.",
                     location: "Business Building, Conference Room A",
                     date: "2024-09-25T14:00:00Z",
-                    image: "https://via.placeholder.com/400x250/9966c7/ffffff?text=Leadership"
+                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKHNHzxf_lzP3SbFSewtq-hn6XJT7N2rRgew&s"
                 }
             ]);
         } finally {
