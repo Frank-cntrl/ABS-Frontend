@@ -14,11 +14,19 @@
 
 /* Events Container */
 .events-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100vw;
+  max-width: none;
+  margin: 0;
   padding: 2rem;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8f9fa 0%, rgba(190, 157, 222, 0.1) 100%);
+  background: linear-gradient(135deg, #cbb4e2 0%, rgba(190, 157, 222, 0.1) 100%);
+  box-sizing: border-box; 
+}
+
+.events-content {
+  max-width: 1400px; 
+  margin: 0 auto; 
+  width: 100%;
 }
 
 .events-header {
@@ -284,7 +292,6 @@
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(117, 56, 176, 0.15);
   transition: all 0.4s ease;
-  border: 1px solid rgba(190, 157, 222, 0.2);
   position: relative;
 }
 

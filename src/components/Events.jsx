@@ -2,311 +2,234 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
 import EventCard from "./EventCard";
+import EventModal from "./EventModal";
 import "./CSS/EventStyles.css";
 
+import AddIcon from "@mui/icons-material/Add";
+import EventIcon from "@mui/icons-material/Event";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+
 const Events = ({ user }) => {
-    const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [editingEvent, setEditingEvent] = useState(null);
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        location: '',
-        date: '',
-        image: ''
-    });
-    const [errors, setErrors] = useState({});
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
-    const isAdmin = user && user.username === 'Admin';
+  const isAdmin = user && user.username === "Admin";
 
-    useEffect(() => {
-        fetchEvents();
-    }, []);
+  // Helper function to set token as cookie
+  const setTokenCookie = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      document.cookie = `token=${token}; path=/; max-age=${24 * 60 * 60}; SameSite=Strict`;
+    }
+  };
 
-    const fetchEvents = async () => {
-        try {
-            const response = await axios.get(`${API_URL}/api/events`);
-            setEvents(response.data);
-        } catch (error) {
-            console.error("Error fetching events:", error);
-            // Mock data for development
-            setEvents([
-                {
-                    id: 1,
-                    title: "Welcome Back Mixer",
-                    description: "Join us for our annual welcome back event! Meet new members, reconnect with old friends, and enjoy great food and music.",
-                    location: "Student Union Building, Room 201",
-                    date: "2024-09-20T18:00:00Z",
-                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKHNHzxf_lzP3SbFSewtq-hn6XJT7N2rRgew&s"
-                },
-                {
-                    id: 2,
-                    title: "Leadership Workshop",
-                    description: "Develop your leadership skills with interactive workshops and guest speakers from industry professionals.",
-                    location: "Business Building, Conference Room A",
-                    date: "2024-09-25T14:00:00Z",
-                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKHNHzxf_lzP3SbFSewtq-hn6XJT7N2rRgew&s"
-                }
-            ]);
-        } finally {
-            setLoading(false);
-        }
-    };
+  // Token debug useEffect
+  useEffect(() => {
+    console.log('=== TOKEN DEBUG ===');
+    const token = localStorage.getItem('token');
+    console.log('Raw token from localStorage:', token);
+    
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log('Token payload:', payload);
+        console.log('Token expiry:', new Date(payload.exp * 1000));
+        console.log('Token issued at:', new Date(payload.iat * 1000));
+        console.log('Current time:', new Date());
+        console.log('Is token expired?', payload.exp * 1000 < Date.now());
+      } catch (e) {
+        console.error('Error decoding token:', e);
+      }
+    } else {
+      console.log('No token found in localStorage');
+    }
+  }, []);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-        if (errors[name]) {
-            setErrors(prev => ({
-                ...prev,
-                [name]: ''
-            }));
-        }
-    };
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
-    const validateForm = () => {
-        const newErrors = {};
-        if (!formData.title.trim()) newErrors.title = "Title is required";
-        if (!formData.description.trim()) newErrors.description = "Description is required";
-        if (!formData.location.trim()) newErrors.location = "Location is required";
-        
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/events`);
+      setEvents(response.data);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        if (!validateForm()) return;
+  const handleModalSubmit = async (formData) => {
+    setModalLoading(true);
 
-        try {
-            const token = localStorage.getItem('token');
-            const config = {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            };
+    try {
+      const token = localStorage.getItem("token");
 
-            if (editingEvent) {
-                const response = await axios.put(
-                    `${API_URL}/api/events/${editingEvent.id}`,
-                    formData,
-                    config
-                );
-                setEvents(prev => prev.map(event => 
-                    event.id === editingEvent.id ? response.data : event
-                ));
-            } else {
-                const response = await axios.post(
-                    `${API_URL}/api/events`,
-                    formData,
-                    config
-                );
-                setEvents(prev => [response.data, ...prev]);
-            }
+      if (!token) {
+        throw new Error("You must be logged in to perform this action");
+      }
 
-            closeModal();
-        } catch (error) {
-            console.error("Error saving event:", error);
-            setErrors({ general: "Failed to save event. Please try again." });
-        }
-    };
+      // Set token as cookie before making request
+      setTokenCookie();
 
-    const handleEdit = (event) => {
-        setEditingEvent(event);
-        setFormData({
-            title: event.title,
-            description: event.description,
-            location: event.location,
-            date: event.date ? event.date.split('T')[0] : '',
-            image: event.image || ''
-        });
-        setShowModal(true);
-    };
+      const config = {
+        withCredentials: true,
+      };
 
-    const handleDelete = async (eventId) => {
-        if (!window.confirm("Are you sure you want to delete this event?")) return;
-
-        try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`${API_URL}/api/events/${eventId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setEvents(prev => prev.filter(event => event.id !== eventId));
-        } catch (error) {
-            console.error("Error deleting event:", error);
-        }
-    };
-
-    const openModal = () => {
-        setEditingEvent(null);
-        setFormData({
-            title: '',
-            description: '',
-            location: '',
-            date: '',
-            image: ''
-        });
-        setErrors({});
-        setShowModal(true);
-    };
-
-    const closeModal = () => {
-        setShowModal(false);
-        setEditingEvent(null);
-        setFormData({
-            title: '',
-            description: '',
-            location: '',
-            date: '',
-            image: ''
-        });
-        setErrors({});
-    };
-
-    if (loading) {
-        return (
-            <div className="events-container">
-                <div className="loading">
-                    <div className="spinner"></div>
-                    Loading events...
-                </div>
-            </div>
+      if (editingEvent) {
+        // Update existing event
+        const response = await axios.put(
+          `${API_URL}/api/events/${editingEvent.id}`,
+          formData,
+          config
         );
+        setEvents((prev) =>
+          prev.map((event) =>
+            event.id === editingEvent.id ? response.data : event
+          )
+        );
+      } else {
+        // Create new event
+        const response = await axios.post(
+          `${API_URL}/api/events`,
+          formData,
+          config
+        );
+        setEvents((prev) => [response.data, ...prev]);
+      }
+
+      setShowModal(false);
+      setEditingEvent(null);
+    } catch (error) {
+      console.error("Error saving event:", error);
+      console.error("Error response:", error.response);
+
+      if (error.response?.status === 401) {
+        throw new Error("Authentication failed. Please log in again.");
+      }
+      throw new Error(error.response?.data?.message || "Failed to save event");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleEdit = (event) => {
+    setEditingEvent(event);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (eventId) => {
+    const event = events.find((e) => e.id === eventId);
+    if (
+      !window.confirm(
+        `Are you sure you want to delete "${event?.title}"? This action cannot be undone.`
+      )
+    ) {
+      return;
     }
 
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        throw new Error("You must be logged in");
+      }
+
+      // Set token as cookie before making request
+      setTokenCookie();
+
+      await axios.delete(`${API_URL}/api/events/${eventId}`, {
+        withCredentials: true
+      });
+      
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      alert("Failed to delete event. Please try again.");
+    }
+  };
+
+  const openCreateModal = () => {
+    setEditingEvent(null);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingEvent(null);
+  };
+
+  if (loading) {
     return (
-        <div className="events-container">
-            <div className="events-header">
-                <h1>Upcoming Events</h1>
-                {isAdmin && (
-                    <button className="add-event-btn" onClick={openModal}>
-                        ✨ Add Event
-                    </button>
-                )}
-            </div>
-
-            {/* Events Grid */}
-            <div className="events-grid">
-                {events.length === 0 ? (
-                    <div className="no-events">
-                        <div className="no-events-icon">📅</div>
-                        <h3>No events yet</h3>
-                        <p>Check back soon for upcoming events!</p>
-                    </div>
-                ) : (
-                    events.map(event => (
-                        <EventCard
-                            key={event.id}
-                            event={event}
-                            isAdmin={isAdmin}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                        />
-                    ))
-                )}
-            </div>
-
-            {/* Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={closeModal}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>{editingEvent ? 'Edit Event' : 'Create New Event'}</h2>
-                            <button className="modal-close" onClick={closeModal}>✕</button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="modal-form">
-                            {errors.general && (
-                                <div className="error-message">{errors.general}</div>
-                            )}
-
-                            <div className="form-group">
-                                <label htmlFor="title">Event Title *</label>
-                                <input
-                                    type="text"
-                                    id="title"
-                                    name="title"
-                                    value={formData.title}
-                                    onChange={handleInputChange}
-                                    className={errors.title ? 'error' : ''}
-                                    placeholder="Enter event title"
-                                />
-                                {errors.title && <span className="error">{errors.title}</span>}
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="description">Description *</label>
-                                <textarea
-                                    id="description"
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                    className={errors.description ? 'error' : ''}
-                                    placeholder="Describe your event"
-                                    rows="4"
-                                />
-                                {errors.description && <span className="error">{errors.description}</span>}
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label htmlFor="location">Location *</label>
-                                    <input
-                                        type="text"
-                                        id="location"
-                                        name="location"
-                                        value={formData.location}
-                                        onChange={handleInputChange}
-                                        className={errors.location ? 'error' : ''}
-                                        placeholder="Event location"
-                                    />
-                                    {errors.location && <span className="error">{errors.location}</span>}
-                                </div>
-
-                                <div className="form-group">
-                                    <label htmlFor="date">Date & Time</label>
-                                    <input
-                                        type="datetime-local"
-                                        id="date"
-                                        name="date"
-                                        value={formData.date}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="image">Image URL</label>
-                                <input
-                                    type="url"
-                                    id="image"
-                                    name="image"
-                                    value={formData.image}
-                                    onChange={handleInputChange}
-                                    placeholder="https://example.com/image.jpg"
-                                />
-                            </div>
-
-                            <div className="modal-actions">
-                                <button type="button" onClick={closeModal} className="cancel-btn">
-                                    Cancel
-                                </button>
-                                <button type="submit" className="submit-btn">
-                                    {editingEvent ? 'Update Event' : 'Create Event'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+      <div className="events-container">
+        <div className="events-content">
+          <div className="loading">
+            <div className="spinner"></div>
+            <p>Loading amazing events...</p>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="events-container">
+      <div className="events-content">
+        <div className="events-header">
+          <div className="header-content">
+            <h1>Upcoming Events</h1>
+          </div>
+          {isAdmin && (
+            <button className="add-event-btn" onClick={openCreateModal}>
+              <AddIcon className="btn-icon" />
+              Add Event
+            </button>
+          )}
+        </div>
+
+        <div className="events-grid">
+          {events.length === 0 ? (
+            <div className="no-events">
+              <EventIcon className="no-events-icon" />
+              <h3>No events scheduled yet</h3>
+              <p>Check back soon for exciting upcoming events!</p>
+              {isAdmin && (
+                <button
+                  className="create-first-event-btn"
+                  onClick={openCreateModal}
+                >
+                  <AutoAwesomeIcon className="btn-icon" />
+                  Create Your First Event
+                </button>
+              )}
+            </div>
+          ) : (
+            events.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                isAdmin={isAdmin}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      <EventModal
+        isOpen={showModal}
+        onClose={closeModal}
+        onSubmit={handleModalSubmit}
+        editingEvent={editingEvent}
+        loading={modalLoading}
+      />
+    </div>
+  );
 };
 
 export default Events;
