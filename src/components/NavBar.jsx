@@ -2,6 +2,15 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./CSS/NavBarStyles.css";
 
+// MUI Icons
+import EventIcon from '@mui/icons-material/Event';
+import PeopleIcon from '@mui/icons-material/People';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+
 const NavBar = ({ user, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -25,15 +34,17 @@ const NavBar = ({ user, onLogout }) => {
         </Link>
       </div>
 
-      {/* Hamburger Menu Button */}
+      {/* Hamburger Menu Button with MUI Icon */}
       <button 
         className={`hamburger ${isMenuOpen ? 'active' : ''}`}
         onClick={toggleMenu}
         aria-label="Toggle menu"
       >
-        <span></span>
-        <span></span>
-        <span></span>
+        {isMenuOpen ? (
+          <CloseIcon className="hamburger-icon" />
+        ) : (
+          <MenuIcon className="hamburger-icon" />
+        )}
       </button>
 
       {/* Mobile Menu Overlay */}
@@ -46,10 +57,12 @@ const NavBar = ({ user, onLogout }) => {
       <div className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
         <div className="public-links">
           <Link to="/events" className="nav-link" onClick={closeMenu}>
-            Upcoming Events
+            <EventIcon className="nav-icon" />
+            <span>Upcoming Events</span>
           </Link>
           <Link to="/eboard" className="nav-link" onClick={closeMenu}>
-            Get to Know Us
+            <PeopleIcon className="nav-icon" />
+            <span>Get to Know Us</span>
           </Link>
         </div>
 
@@ -57,23 +70,26 @@ const NavBar = ({ user, onLogout }) => {
           {user ? (
             <div className="user-section">
               <Link to="/me" className="nav-link profile-link" onClick={closeMenu}>
-                Welcome, {user.username}!
+                <AccountCircleIcon className="nav-icon" />
+                <span>Welcome, {user.username}!</span>
               </Link>
               <button 
                 onClick={() => {
                   onLogout();
                   closeMenu();
                 }} 
-                className="logout-btn"
+                className="logout-btn nav-button"
               >
-                Logout
+                <LogoutIcon className="nav-icon" />
+                <span>Logout</span>
               </button>
             </div>
           ) : (
             <div className="auth-links">
-              <span className="auth-text">Member of the E-board? Login Here 👉</span>
+              <span className="auth-text">Member of the E-board? Login Here</span>
               <Link to="/login" className="nav-link login-btn" onClick={closeMenu}>
-                Login
+                <LoginIcon className="nav-icon" />
+                <span>Login</span>
               </Link>
             </div>
           )}
