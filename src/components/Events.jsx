@@ -18,36 +18,6 @@ const Events = ({ user }) => {
 
   const isAdmin = user && user.username === "Admin";
 
-  // Helper function to set token as cookie
-  const setTokenCookie = () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      document.cookie = `token=${token}; path=/; max-age=${24 * 60 * 60}; SameSite=Strict`;
-    }
-  };
-
-  // Token debug useEffect
-  useEffect(() => {
-    console.log('=== TOKEN DEBUG ===');
-    const token = localStorage.getItem('token');
-    console.log('Raw token from localStorage:', token);
-    
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log('Token payload:', payload);
-        console.log('Token expiry:', new Date(payload.exp * 1000));
-        console.log('Token issued at:', new Date(payload.iat * 1000));
-        console.log('Current time:', new Date());
-        console.log('Is token expired?', payload.exp * 1000 < Date.now());
-      } catch (e) {
-        console.error('Error decoding token:', e);
-      }
-    } else {
-      console.log('No token found in localStorage');
-    }
-  }, []);
-
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -73,11 +43,11 @@ const Events = ({ user }) => {
         throw new Error("You must be logged in to perform this action");
       }
 
-      // Set token as cookie before making request
-      setTokenCookie();
-
       const config = {
-        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       };
 
       if (editingEvent) {
@@ -109,9 +79,12 @@ const Events = ({ user }) => {
       console.error("Error response:", error.response);
 
       if (error.response?.status === 401) {
-        throw new Error("Authentication failed. Please log in again.");
+        alert("Authentication failed. Please log in again.");
+        return;
       }
-      throw new Error(error.response?.data?.message || "Failed to save event");
+      
+      const errorMessage = error.response?.data?.error || error.message || "Failed to save event";
+      alert(errorMessage);
     } finally {
       setModalLoading(false);
     }
@@ -139,17 +112,25 @@ const Events = ({ user }) => {
         throw new Error("You must be logged in");
       }
 
-      // Set token as cookie before making request
-      setTokenCookie();
+      // Use Authorization header like the other requests
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      };
 
-      await axios.delete(`${API_URL}/api/events/${eventId}`, {
-        withCredentials: true
-      });
+      await axios.delete(`${API_URL}/api/events/${eventId}`, config);
       
       setEvents((prev) => prev.filter((event) => event.id !== eventId));
     } catch (error) {
       console.error("Error deleting event:", error);
-      alert("Failed to delete event. Please try again.");
+      console.error("Delete error response:", error.response);
+      
+      if (error.response?.status === 401) {
+        alert("Authentication failed. Please log in again.");
+      } else {
+        alert("Failed to delete event. Please try again.");
+      }
     }
   };
 
