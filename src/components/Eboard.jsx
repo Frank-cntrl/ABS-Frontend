@@ -42,59 +42,75 @@ const Eboard = ({ user }) => {
     }
   };
 
-  const handleModalSubmit = async (formData) => {
-    setModalLoading(true);
+const handleModalSubmit = async (formData) => {
+  setModalLoading(true);
 
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const token = localStorage.getItem("token");
+    
+    // DEBUG: Log token info
+    console.log("=== FRONTEND DEBUG ===");
+    console.log("Token exists:", !!token);
+    console.log("Token preview:", token ? token.substring(0, 50) + "..." : "No token");
+    console.log("User object:", user);
+    console.log("Is Admin:", isAdmin);
+    console.log("API URL:", API_URL);
 
-      if (!token) {
-        throw new Error("You must be logged in to perform this action");
-      }
-
-      // Set token as cookie before making request
-      setTokenCookie();
-
-      const config = {
-        withCredentials: true,
-      };
-
-      if (editingMember) {
-        // Update existing member
-        const response = await axios.put(
-          `${API_URL}/api/members/${editingMember.id}`,
-          formData,
-          config
-        );
-        setMembers((prev) =>
-          prev.map((member) =>
-            member.id === editingMember.id ? response.data : member
-          )
-        );
-      } else {
-        // Create new member
-        const response = await axios.post(
-          `${API_URL}/api/members`,
-          formData,
-          config
-        );
-        setMembers((prev) => [response.data, ...prev]);
-      }
-
-      setShowModal(false);
-      setEditingMember(null);
-    } catch (error) {
-      console.error("Error saving member:", error);
-      console.error("Error response:", error.response);
-
-      if (error.response?.status === 401) {
-        throw new Error("Authentication failed. Please log in again.");
-      }
-      throw new Error(error.response?.data?.message || "Failed to save member");
-    } finally {
-      setModalLoading(false);
+    if (!token) {
+      alert("No authentication token found. Please log in again.");
+      return;
     }
-  };
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    };
+
+    console.log("Request config:", config);
+    console.log("Form data:", formData);
+
+    if (editingMember) {
+      const response = await axios.put(
+        `${API_URL}/api/members/${editingMember.id}`,
+        formData,
+        config
+      );
+      setMembers((prev) =>
+        prev.map((member) =>
+          member.id === editingMember.id ? response.data : member
+        )
+      );
+    } else {
+      const response = await axios.post(
+        `${API_URL}/api/members`,
+        formData,
+        config
+      );
+      setMembers((prev) => [response.data, ...prev]);
+    }
+
+    setShowModal(false);
+    setEditingMember(null);
+  } catch (error) {
+    console.error("=== ERROR DEBUG ===");
+    console.error("Full error:", error);
+    console.error("Error response:", error.response);
+    console.error("Error status:", error.response?.status);
+    console.error("Error data:", error.response?.data);
+
+    if (error.response?.status === 401) {
+      alert("Authentication failed. Please log in again.");
+      return;
+    }
+    
+    const errorMessage = error.response?.data?.error || error.message || "Failed to save member";
+    alert(errorMessage);
+  } finally {
+    setModalLoading(false);
+  }
+};
 
   const handleEdit = (member) => {
     setEditingMember(member);
