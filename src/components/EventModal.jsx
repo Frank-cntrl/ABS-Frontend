@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from "react";
 import "./CSS/EventStyles.css";
 
+// MUI Icons
+import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import EventIcon from '@mui/icons-material/Event';
+import DescriptionIcon from '@mui/icons-material/Description';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ImageIcon from '@mui/icons-material/Image';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
+
 const EventModal = ({ 
     isOpen, 
     onClose, 
@@ -16,6 +28,20 @@ const EventModal = ({
         image: ''
     });
     const [errors, setErrors] = useState({});
+
+    // Handle body scroll when modal opens/closes
+    useEffect(() => {
+        if (isOpen) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+
+        // Cleanup on unmount
+        return () => {
+            document.body.classList.remove('modal-open');
+        };
+    }, [isOpen]);
 
     // Update form data when editingEvent changes
     useEffect(() => {
@@ -97,32 +123,32 @@ const EventModal = ({
                     <h2>
                         {editingEvent ? (
                             <>
-                                <span className="modal-icon">✏️</span>
+                                <EditIcon className="modal-icon" />
                                 Edit Event
                             </>
                         ) : (
                             <>
-                                <span className="modal-icon">✨</span>
-                                Create New Event
+                                <AddIcon className="modal-icon" />
+                                Add New Event
                             </>
                         )}
                     </h2>
                     <button className="modal-close" onClick={handleClose} disabled={loading}>
-                        ✕
+                        <CloseIcon />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="modal-form">
                     {errors.general && (
                         <div className="error-message">
-                            <span className="error-icon">⚠️</span>
                             {errors.general}
                         </div>
                     )}
 
                     <div className="form-group">
                         <label htmlFor="title">
-                            Event Title *
+                            <EventIcon className="label-icon" />
+                            Event Title
                         </label>
                         <input
                             type="text"
@@ -136,7 +162,6 @@ const EventModal = ({
                         />
                         {errors.title && (
                             <span className="error">
-                                <span className="error-icon">❌</span>
                                 {errors.title}
                             </span>
                         )}
@@ -144,7 +169,8 @@ const EventModal = ({
 
                     <div className="form-group">
                         <label htmlFor="description">
-                            Description *
+                            <DescriptionIcon className="label-icon" />
+                            Description
                         </label>
                         <textarea
                             id="description"
@@ -158,7 +184,6 @@ const EventModal = ({
                         />
                         {errors.description && (
                             <span className="error">
-                                <span className="error-icon">❌</span>
                                 {errors.description}
                             </span>
                         )}
@@ -167,7 +192,8 @@ const EventModal = ({
                     <div className="form-row">
                         <div className="form-group">
                             <label htmlFor="location">
-                                Location *
+                                <LocationOnIcon className="label-icon" />
+                                Location
                             </label>
                             <input
                                 type="text"
@@ -181,7 +207,6 @@ const EventModal = ({
                             />
                             {errors.location && (
                                 <span className="error">
-                                    <span className="error-icon">❌</span>
                                     {errors.location}
                                 </span>
                             )}
@@ -189,6 +214,7 @@ const EventModal = ({
 
                         <div className="form-group">
                             <label htmlFor="date">
+                                <AccessTimeIcon className="label-icon" />
                                 Date & Time
                             </label>
                             <input
@@ -204,7 +230,8 @@ const EventModal = ({
 
                     <div className="form-group">
                         <label htmlFor="image">
-                            Event Image
+                            <ImageIcon className="label-icon" />
+                            Event Image (Optional)
                         </label>
                         <input
                             type="url"
@@ -218,6 +245,10 @@ const EventModal = ({
                         {formData.image && (
                             <div className="image-preview">
                                 <img src={formData.image} alt="Preview" />
+                                <div className="preview-label">
+                                    <ImageIcon className="preview-icon" />
+                                    Preview
+                                </div>
                             </div>
                         )}
                     </div>
@@ -229,7 +260,7 @@ const EventModal = ({
                             className="cancel-btn"
                             disabled={loading}
                         >
-                            <span className="btn-icon">❌</span>
+                            <CancelIcon className="btn-icon" />
                             Cancel
                         </button>
                         <button 
@@ -238,16 +269,11 @@ const EventModal = ({
                             disabled={loading}
                         >
                             {loading ? (
-                                <>
-                                    <span className="spinner-small"></span>
-                                    {editingEvent ? 'Updating...' : 'Creating...'}
-                                </>
+                                <div className="spinner spinner-small"></div>
                             ) : (
                                 <>
-                                    <span className="btn-icon">
-                                        {editingEvent ? '💾' : '✨'}
-                                    </span>
-                                    {editingEvent ? 'Update Event' : 'Create Event'}
+                                    <SaveIcon className="btn-icon" />
+                                    {editingEvent ? 'Update' : 'Add'} Event
                                 </>
                             )}
                         </button>

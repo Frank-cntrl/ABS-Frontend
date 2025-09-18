@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from "react";
 import "./CSS/EboardStyles.css";
 
-// MUI Icons
+// MUI Components and Icons
 import CloseIcon from '@mui/icons-material/Close';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EditIcon from '@mui/icons-material/Edit';
 import PersonIcon from '@mui/icons-material/Person';
-import CakeIcon from '@mui/icons-material/Cake';
 import SchoolIcon from '@mui/icons-material/School';
 import WorkIcon from '@mui/icons-material/Work';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ImageIcon from '@mui/icons-material/Image';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { FormControl, Select, MenuItem, InputLabel } from '@mui/material';
 
 const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
   const [formData, setFormData] = useState({
     name: '',
-    age: '',
+    year: '',
     major: '',
     role: '',
     description: '',
@@ -25,11 +26,35 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
   });
   const [errors, setErrors] = useState({});
 
+  // Year options
+  const yearOptions = [
+    'Freshman',
+    'Sophomore', 
+    'Junior',
+    'Senior',
+    'Graduate Student',
+    'Alumni'
+  ];
+
+  // Handle body scroll when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (editingMember) {
       setFormData({
         name: editingMember.name || '',
-        age: editingMember.age || '',
+        year: editingMember.year || editingMember.age || '', // Handle legacy 'age' field
         major: editingMember.major || '',
         role: editingMember.role || '',
         description: editingMember.description || '',
@@ -38,7 +63,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     } else {
       setFormData({
         name: '',
-        age: '',
+        year: '',
         major: '',
         role: '',
         description: '',
@@ -69,8 +94,8 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     }
-    if (!formData.age.trim()) {
-      newErrors.age = 'Age is required';
+    if (!formData.year.trim()) {
+      newErrors.year = 'Year is required';
     }
     if (!formData.major.trim()) {
       newErrors.major = 'Major is required';
@@ -94,7 +119,14 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     }
 
     try {
-      await onSubmit(formData);
+      // Send 'year' as 'age' for backend compatibility
+      const submitData = {
+        ...formData,
+        age: formData.year // Map year to age for backend
+      };
+      delete submitData.year; // Remove year since we're using age
+      
+      await onSubmit(submitData);
     } catch (error) {
       console.error('Error submitting form:', error);
     }
@@ -144,18 +176,49 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
 
             <div className="form-group">
               <label>
-                <CakeIcon className="label-icon" />
-                Age
+                <CalendarTodayIcon className="label-icon" />
+                Year
               </label>
-              <input
-                type="text"
-                name="age"
-                value={formData.age}
-                onChange={handleChange}
-                placeholder="e.g., 21, Senior, Junior (21)"
-                className={errors.age ? 'error' : ''}
-              />
-              {errors.age && <span className="error">{errors.age}</span>}
+              <FormControl fullWidth variant="outlined" error={!!errors.year}>
+                <Select
+                  name="year"
+                  value={formData.year}
+                  onChange={handleChange}
+                  displayEmpty
+                  className="year-select"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '12px',
+                      backgroundColor: 'white',
+                      '& fieldset': {
+                        borderColor: errors.year ? '#dc3545' : '#e9ecef',
+                        borderWidth: '2px'
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#9966c7'
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#9966c7',
+                        boxShadow: '0 0 0 4px rgba(153, 102, 199, 0.1)'
+                      }
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '1rem',
+                      fontSize: '1rem'
+                    }
+                  }}
+                >
+                  <MenuItem value="" disabled>
+                    <em>Select year...</em>
+                  </MenuItem>
+                  {yearOptions.map((year) => (
+                    <MenuItem key={year} value={year}>
+                      {year}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {errors.year && <span className="error">{errors.year}</span>}
             </div>
           </div>
 

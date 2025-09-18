@@ -1,0 +1,602 @@
+:root {
+  --primary-purple: #7538b0;
+  --medium-purple: #9966c7;
+  --light-purple: #be9dde;
+  --purple-gradient: linear-gradient(135deg, #7538b0, #9966c7);
+  --light-gradient: linear-gradient(135deg, #9966c7, #be9dde);
+  --text-dark: #333333;
+  --text-light: #666666;
+  --background-light: #f8f9fa;
+  --white: #ffffff;
+  --shadow: rgba(117, 56, 176, 0.2);
+  --shadow-hover: rgba(117, 56, 176, 0.3);
+  --success-green: #28a745;
+  --warning-orange: #fd7e14;
+  --danger-red: #dc3545;
+  --info-blue: #17a2b8;
+}
+
+/* Container */
+.user-page-container {
+  width: 100vw;
+  max-width: none;
+  margin: 0;
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #cbb4e2 0%, rgba(190, 157, 222, 0.1) 100%);
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+.user-page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Not Logged In State */
+.not-logged-in {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.login-prompt {
+  background: white;
+  padding: 3rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px var(--shadow);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+.login-icon {
+  font-size: 4rem !important;
+  color: var(--primary-purple);
+  margin-bottom: 1rem;
+}
+
+.login-prompt h1 {
+  color: var(--primary-purple);
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.login-prompt p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.public-info {
+  background: rgba(190, 157, 222, 0.1);
+  padding: 1.5rem;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.public-icon {
+  font-size: 1.5rem !important;
+  color: var(--medium-purple);
+}
+
+.public-info p {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-dark);
+}
+
+/* Profile Header */
+.profile-header {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.admin-icon {
+  font-size: 3rem !important;
+  color: var(--primary-purple);
+}
+
+.profile-text h1 {
+  color: var(--primary-purple);
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+}
+
+.admin-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--purple-gradient);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: fit-content;
+  margin: 0;
+}
+
+.user-badge {
+  background: var(--light-gradient);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: fit-content;
+  margin: 0;
+}
+
+.badge-icon {
+  font-size: 1rem !important;
+}
+
+/* Admin Dashboard */
+.admin-dashboard {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.dashboard-header h2 {
+  color: var(--primary-purple);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.dashboard-header p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.section-icon {
+  font-size: 1.5rem !important;
+}
+
+/* Feature Sections */
+.feature-section {
+  margin-bottom: 3rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+  color: var(--primary-purple);
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background: rgba(190, 157, 222, 0.05);
+  padding: 2rem;
+  border-radius: 15px;
+  border: 2px solid rgba(190, 157, 222, 0.2);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(117, 56, 176, 0.15);
+  border-color: var(--light-purple);
+}
+
+.feature-icon {
+  font-size: 2.5rem !important;
+  color: var(--medium-purple);
+  margin-bottom: 1rem;
+}
+
+.feature-card h4 {
+  color: var(--primary-purple);
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.feature-card p {
+  color: var(--text-light);
+  line-height: 1.6;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Permissions Section */
+.permissions-section {
+  margin-bottom: 2rem;
+}
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(190, 157, 222, 0.05);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.permission-icon.admin {
+  color: var(--success-green);
+  font-size: 1.2rem !important;
+}
+
+.permission-icon.public {
+  color: var(--info-blue);
+  font-size: 1.2rem !important;
+}
+
+.permission-icon.restricted {
+  color: var(--warning-orange);
+  font-size: 1.2rem !important;
+}
+
+/* Contact Section */
+.contact-section {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.contact-content p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.contact-reasons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.contact-reason {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(190, 157, 222, 0.05);
+  border-radius: 15px;
+  border: 2px solid rgba(190, 157, 222, 0.2);
+  transition: all 0.3s ease;
+}
+
+.contact-reason:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(117, 56, 176, 0.15);
+  border-color: var(--light-purple);
+}
+
+.reason-icon.bug {
+  color: var(--danger-red);
+  font-size: 2rem !important;
+}
+
+.reason-icon.help {
+  color: var(--info-blue);
+  font-size: 2rem !important;
+}
+
+.reason-icon.feature {
+  color: var(--success-green);
+  font-size: 2rem !important;
+}
+
+.reason-text h4 {
+  color: var(--primary-purple);
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.reason-text p {
+  color: var(--text-light);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Contact Info */
+.contact-info {
+  background: var(--light-gradient);
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.email-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.email-icon {
+  font-size: 2.5rem !important;
+  color: white;
+}
+
+.email-content h4 {
+  color: white;
+  font-size: 1.3rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.email-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.email-address {
+  color: var(--primary-purple);
+  font-size: 1.1rem;
+  font-weight: 600;
+  user-select: all;
+}
+
+.copy-button {
+  background: var(--primary-purple);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copy-button:hover {
+  background: var(--medium-purple);
+  transform: translateY(-2px);
+}
+
+.copy-button.copied {
+  background: var(--success-green);
+  transform: scale(1.05);
+}
+
+.copy-icon {
+  font-size: 1rem !important;
+}
+
+/* Regular User Info */
+.regular-user-info {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px var(--shadow);
+  text-align: center;
+}
+
+.regular-user-info p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .user-page-container {
+    padding: 1rem;
+  }
+
+  .profile-header {
+    padding: 2rem;
+  }
+
+  .profile-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .admin-icon {
+    font-size: 2.5rem !important;
+  }
+
+  .profile-text h1 {
+    font-size: 2rem;
+  }
+
+  .admin-dashboard {
+    padding: 2rem;
+  }
+
+  .dashboard-header h2 {
+    font-size: 1.7rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .feature-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .permissions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-reasons {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-reason {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .contact-section {
+    padding: 2rem;
+  }
+
+  .email-wrapper {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .email-address {
+    font-size: 1rem;
+    word-break: break-all;
+  }
+
+  .copy-button {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+  }
+
+  .login-prompt {
+    padding: 2rem;
+    margin: 1rem;
+  }
+
+  .login-prompt h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-page-container {
+    padding: 0.5rem;
+  }
+
+  .profile-header,
+  .admin-dashboard,
+  .contact-section {
+    padding: 1.5rem;
+  }
+
+  .profile-text h1 {
+    font-size: 1.8rem;
+  }
+
+  .dashboard-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .feature-card {
+    padding: 1.5rem;
+  }
+
+  .feature-icon {
+    font-size: 2rem !important;
+  }
+
+  .login-prompt {
+    padding: 1.5rem;
+  }
+
+  .login-icon {
+    font-size: 3rem !important;
+  }
+
+  .login-prompt h1 {
+    font-size: 1.8rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.user-page-content > * {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.user-page-content > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.user-page-content > *:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+/* Focus styles for accessibility */
+.copy-button:focus {
+  outline: 3px solid var(--light-purple);
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
