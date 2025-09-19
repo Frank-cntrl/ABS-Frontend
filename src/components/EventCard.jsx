@@ -69,7 +69,7 @@ const EventCard = ({ event, isAdmin, onEdit, onDelete }) => {
                     </div>
                 </div>
 
-                <div className="event-details">
+                {/* <div className="event-details">
                     {event.location && (
                         <div className="event-location">
                             <LocationOnIcon className="location-icon" />
@@ -82,7 +82,7 @@ const EventCard = ({ event, isAdmin, onEdit, onDelete }) => {
                             ? `${event.description.substring(0, 150)}...`
                             : event.description}
                     </p>
-                </div>
+                </div> */}
 
                 {isAdmin && (
                     <div className="event-actions">
