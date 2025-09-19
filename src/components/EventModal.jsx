@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { API_URL } from "../shared";
 import "./CSS/EventStyles.css";
 
 // MUI Icons
@@ -13,6 +15,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const EventModal = ({ 
     isOpen, 
@@ -30,6 +33,9 @@ const EventModal = ({
         rsvpLink: ''
     });
     const [errors, setErrors] = useState({});
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
+    const [uploadingImage, setUploadingImage] = useState(false);
 
     // Function to convert date to local datetime-local format
     const formatDateForInput = (dateString) => {
@@ -66,6 +72,9 @@ const EventModal = ({
                 image: editingEvent.image || '',
                 rsvpLink: editingEvent.rsvpLink || ''
             });
+            // Show existing image as preview if available
+            setImagePreview(editingEvent.image || '');
+            setImageFile(null);
         } else {
             setFormData({
                 title: '',
@@ -75,6 +84,8 @@ const EventModal = ({
                 image: '',
                 rsvpLink: ''
             });
+            setImagePreview('');
+            setImageFile(null);
         }
         setErrors({});
     }, [editingEvent, isOpen]);
@@ -94,6 +105,73 @@ const EventModal = ({
         }
     };
 
+    // Handle file selection
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setErrors(prev => ({
+                    ...prev,
+                    image: 'Please select a valid image file'
+                }));
+                return;
+            }
+
+            // Validate file size (10MB limit)
+            if (file.size > 10 * 1024 * 1024) {
+                setErrors(prev => ({
+                    ...prev,
+                    image: 'Image size must be less than 10MB'
+                }));
+                return;
+            }
+
+            setImageFile(file);
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+
+            // Clear image errors
+            if (errors.image) {
+                setErrors(prev => ({
+                    ...prev,
+                    image: ''
+                }));
+            }
+        }
+    };
+
+    // Upload image to Cloudinary
+    const uploadImage = async () => {
+        if (!imageFile) return formData.image; // Return existing image URL if no new file
+        
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', imageFile);
+        
+        try {
+            setUploadingImage(true);
+            const token = localStorage.getItem('token');
+            const response = await axios.post(`${API_URL}/api/upload/image`, formDataUpload, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            return response.data.imageUrl;
+        } catch (error) {
+            console.error('Image upload failed:', error);
+            throw new Error('Failed to upload image. Please try again.');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
     const validateForm = () => {
         const newErrors = {};
         if (!formData.title.trim()) newErrors.title = "Title is required";
@@ -110,8 +188,15 @@ const EventModal = ({
         if (!validateForm()) return;
 
         try {
+            // Upload image if new file selected, otherwise keep existing
+            const imageUrl = await uploadImage();
+            
             // Convert the local datetime back to ISO string for submission
-            const submitData = { ...formData };
+            const submitData = { 
+                ...formData,
+                image: imageUrl
+            };
+            
             if (submitData.date) {
                 // Create date object from the datetime-local input (which is in local time)
                 const localDate = new Date(submitData.date);
@@ -135,7 +220,21 @@ const EventModal = ({
             rsvpLink: ''
         });
         setErrors({});
+        setImageFile(null);
+        setImagePreview('');
+        setUploadingImage(false);
         onClose();
+    };
+
+    // Clear file selection
+    const clearImageSelection = () => {
+        setImageFile(null);
+        setImagePreview('');
+        document.getElementById('imageFile').value = '';
+        // If editing, restore the original image preview
+        if (editingEvent && editingEvent.image) {
+            setImagePreview(editingEvent.image);
+        }
     };
 
     if (!isOpen) return null;
@@ -157,7 +256,7 @@ const EventModal = ({
                             </>
                         )}
                     </h2>
-                    <button className="modal-close" onClick={handleClose} disabled={loading}>
+                    <button className="modal-close" onClick={handleClose} disabled={loading || uploadingImage}>
                         <CloseIcon />
                     </button>
                 </div>
@@ -182,7 +281,7 @@ const EventModal = ({
                             onChange={handleInputChange}
                             className={errors.title ? 'error' : ''}
                             placeholder="e.g., Welcome Back Mixer"
-                            disabled={loading}
+                            disabled={loading || uploadingImage}
                         />
                         {errors.title && (
                             <span className="error">
@@ -204,7 +303,7 @@ const EventModal = ({
                             className={errors.description ? 'error' : ''}
                             placeholder="Describe your event, activities, and what attendees can expect..."
                             rows="4"
-                            disabled={loading}
+                            disabled={loading || uploadingImage}
                         />
                         {errors.description && (
                             <span className="error">
@@ -227,7 +326,7 @@ const EventModal = ({
                                 onChange={handleInputChange}
                                 className={errors.location ? 'error' : ''}
                                 placeholder="e.g., Student Union Room 201"
-                                disabled={loading}
+                                disabled={loading || uploadingImage}
                             />
                             {errors.location && (
                                 <span className="error">
@@ -247,7 +346,7 @@ const EventModal = ({
                                 name="date"
                                 value={formData.date}
                                 onChange={handleInputChange}
-                                disabled={loading}
+                                disabled={loading || uploadingImage}
                             />
                         </div>
                     </div>
@@ -255,24 +354,64 @@ const EventModal = ({
                     <div className="form-group">
                         <label htmlFor="image">
                             <ImageIcon className="label-icon" />
-                            Event Image (Optional)
+                            Event Image
                         </label>
-                        <input
-                            type="url"
-                            id="image"
-                            name="image"
-                            value={formData.image}
-                            onChange={handleInputChange}
-                            placeholder="https://example.com/your-image.jpg"
-                            disabled={loading}
-                        />
-                        {formData.image && (
+                        
+                        {/* File upload section */}
+                        <div className="image-upload-section">
+                            <label htmlFor="imageFile" className="file-upload-label">
+                                <CloudUploadIcon className="upload-icon" />
+                                <span>
+                                    {imageFile ? imageFile.name : (editingEvent && formData.image ? 'Change image' : 'Choose image file')}
+                                </span>
+                                <small>Max 10MB - JPG, PNG, GIF</small>
+                            </label>
+                            <input
+                                type="file"
+                                id="imageFile"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                disabled={loading || uploadingImage}
+                                className="file-input"
+                            />
+                            
+                            {(imageFile || imagePreview) && (
+                                <button
+                                    type="button"
+                                    onClick={clearImageSelection}
+                                    className="clear-file-btn"
+                                    disabled={loading || uploadingImage}
+                                >
+                                    {imageFile ? 'Clear File' : 'Remove Image'}
+                                </button>
+                            )}
+                        </div>
+
+                        {errors.image && (
+                            <span className="error">
+                                {errors.image}
+                            </span>
+                        )}
+
+                        {/* Image preview */}
+                        {imagePreview && (
                             <div className="modal-image-preview">
-                                <img src={formData.image} alt="Preview" />
+                                <img 
+                                    src={imagePreview} 
+                                    alt="Preview" 
+                                />
                                 <div className="modal-preview-label">
                                     <ImageIcon className="modal-preview-icon" />
-                                    Preview
+                                    {uploadingImage ? 'Uploading...' : 'Preview'}
                                 </div>
+                            </div>
+                        )}
+                        
+                        {/* Upload progress */}
+                        {uploadingImage && (
+                            <div className="upload-progress">
+                                <div className="spinner spinner-small"></div>
+                                <span>Uploading image to cloud storage...</span>
                             </div>
                         )}
                     </div>
@@ -289,7 +428,7 @@ const EventModal = ({
                             value={formData.rsvpLink}
                             onChange={handleInputChange}
                             placeholder="https://forms.google.com/your-form-link"
-                            disabled={loading}
+                            disabled={loading || uploadingImage}
                         />
                         {formData.rsvpLink && (
                             <div className="rsvp-preview">
@@ -304,7 +443,7 @@ const EventModal = ({
                             type="button" 
                             onClick={handleClose} 
                             className="cancel-btn"
-                            disabled={loading}
+                            disabled={loading || uploadingImage}
                         >
                             <CancelIcon className="btn-icon" />
                             Cancel
@@ -312,9 +451,9 @@ const EventModal = ({
                         <button 
                             type="submit" 
                             className="submit-btn"
-                            disabled={loading}
+                            disabled={loading || uploadingImage}
                         >
-                            {loading ? (
+                            {loading || uploadingImage ? (
                                 <div className="spinner spinner-small"></div>
                             ) : (
                                 <>
