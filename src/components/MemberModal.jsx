@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { API_URL } from "../shared";
 import "./CSS/EboardStyles.css";
 
 // MUI Components and Icons
@@ -13,7 +15,8 @@ import ImageIcon from '@mui/icons-material/Image';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { FormControl, Select, MenuItem, InputLabel } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { FormControl, Select, MenuItem } from '@mui/material';
 
 const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
   const [formData, setFormData] = useState({
@@ -25,6 +28,9 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     picture: ''
   });
   const [errors, setErrors] = useState({});
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Year options
   const yearOptions = [
@@ -60,6 +66,9 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
         description: editingMember.description || '',
         picture: editingMember.picture || ''
       });
+      // Show existing image as preview if available
+      setImagePreview(editingMember.picture || '');
+      setImageFile(null);
     } else {
       setFormData({
         name: '',
@@ -69,6 +78,8 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
         description: '',
         picture: ''
       });
+      setImagePreview('');
+      setImageFile(null);
     }
     setErrors({});
   }, [editingMember, isOpen]);
@@ -84,6 +95,106 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
       setErrors(prev => ({
         ...prev,
         [name]: ''
+      }));
+    }
+  };
+
+  // Handle file selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({
+          ...prev,
+          picture: 'Please select a valid image file'
+        }));
+        return;
+      }
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        setErrors(prev => ({
+          ...prev,
+          picture: 'Image size must be less than 10MB'
+        }));
+        return;
+      }
+
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+
+      // Clear picture errors
+      if (errors.picture) {
+        setErrors(prev => ({
+          ...prev,
+          picture: ''
+        }));
+      }
+    }
+  };
+
+  // Upload image to Cloudinary
+  const uploadImage = async () => {
+    if (!imageFile) {
+      // If no new file and image was cleared, return empty string
+      if (!imagePreview && !formData.picture) {
+        return '';
+      }
+      // Otherwise return existing image URL
+      return formData.picture;
+    }
+    
+    const formDataUpload = new FormData();
+    formDataUpload.append('image', imageFile);
+    
+    try {
+      setUploadingImage(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/api/upload/image`, formDataUpload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      return response.data.imageUrl;
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      throw new Error('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Clear file selection
+  const clearImageSelection = () => {
+    setImageFile(null);
+    setImagePreview('');
+    
+    // Clear the file input
+    const fileInput = document.getElementById('imageFile');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    
+    // Clear the image from formData as well
+    setFormData(prev => ({
+      ...prev,
+      picture: ''
+    }));
+    
+    // Clear any image-related errors
+    if (errors.picture) {
+      setErrors(prev => ({
+        ...prev,
+        picture: ''
       }));
     }
   };
@@ -119,23 +230,43 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     }
 
     try {
+      // Upload image if new file selected, otherwise keep existing
+      const imageUrl = await uploadImage();
+      
       // Send 'year' as 'age' for backend compatibility
       const submitData = {
         ...formData,
-        age: formData.year // Map year to age for backend
+        age: formData.year, // Map year to age for backend
+        picture: imageUrl
       };
       delete submitData.year; // Remove year since we're using age
       
       await onSubmit(submitData);
     } catch (error) {
-      console.error('Error submitting form:', error);
+      setErrors({ general: error.message || "Failed to save member. Please try again." });
     }
+  };
+
+  const handleClose = () => {
+    setFormData({
+      name: '',
+      year: '',
+      major: '',
+      role: '',
+      description: '',
+      picture: ''
+    });
+    setErrors({});
+    setImageFile(null);
+    setImagePreview('');
+    setUploadingImage(false);
+    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>
@@ -151,12 +282,18 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               </>
             )}
           </h2>
-          <button className="modal-close" onClick={onClose}>
+          <button className="modal-close" onClick={handleClose} disabled={loading || uploadingImage}>
             <CloseIcon />
           </button>
         </div>
 
         <form className="modal-form" onSubmit={handleSubmit}>
+          {errors.general && (
+            <div className="error-message">
+              {errors.general}
+            </div>
+          )}
+
           <div className="form-row">
             <div className="form-group">
               <label>
@@ -170,6 +307,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="Enter member's name"
                 className={errors.name ? 'error' : ''}
+                disabled={loading || uploadingImage}
               />
               {errors.name && <span className="error">{errors.name}</span>}
             </div>
@@ -185,6 +323,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                   value={formData.year}
                   onChange={handleChange}
                   displayEmpty
+                  disabled={loading || uploadingImage}
                   className="year-select"
                   sx={{
                     '& .MuiOutlinedInput-root': {
@@ -235,6 +374,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="e.g., Computer Science, Business"
                 className={errors.major ? 'error' : ''}
+                disabled={loading || uploadingImage}
               />
               {errors.major && <span className="error">{errors.major}</span>}
             </div>
@@ -251,6 +391,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="e.g., President, Marketing Lead"
                 className={errors.role ? 'error' : ''}
+                disabled={loading || uploadingImage}
               />
               {errors.role && <span className="error">{errors.role}</span>}
             </div>
@@ -268,41 +409,92 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               placeholder="Tell us about this member..."
               rows="4"
               className={errors.description ? 'error' : ''}
+              disabled={loading || uploadingImage}
             />
             {errors.description && <span className="error">{errors.description}</span>}
           </div>
 
           <div className="form-group">
-            <label>
+            <label htmlFor="imageFile">
               <ImageIcon className="label-icon" />
-              Picture URL (Optional)
+              Member Photo
             </label>
-            <input
-              type="url"
-              name="picture"
-              value={formData.picture}
-              onChange={handleChange}
-              placeholder="https://example.com/photo.jpg"
-            />
+            
+            {/* File upload section */}
+            <div className="image-upload-section">
+              <label htmlFor="imageFile" className="file-upload-label">
+                <CloudUploadIcon className="upload-icon" />
+                <span>
+                  {imageFile ? imageFile.name : (editingMember && formData.picture ? 'Change photo' : 'Choose photo file')}
+                </span>
+                <small>Max 10MB - JPG, PNG, GIF</small>
+              </label>
+              <input
+                type="file"
+                id="imageFile"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={loading || uploadingImage}
+                className="file-input"
+              />
+              
+              {(imageFile || imagePreview) && (
+                <button
+                  type="button"
+                  onClick={clearImageSelection}
+                  className="clear-file-btn"
+                  disabled={loading || uploadingImage}
+                >
+                  {imageFile ? 'Clear Selected File' : 'Remove Photo'}
+                </button>
+              )}
+            </div>
+
+            {errors.picture && (
+              <span className="error">
+                {errors.picture}
+              </span>
+            )}
+
+            {/* Image preview */}
+            {imagePreview && (
+              <div className="modal-image-preview">
+                <img 
+                  src={imagePreview} 
+                  alt="Preview" 
+                />
+                <div className="modal-preview-label">
+                  <ImageIcon className="modal-preview-icon" />
+                  {uploadingImage ? 'Uploading...' : 'Preview'}
+                </div>
+              </div>
+            )}
+            
+            {/* Upload progress */}
+            {uploadingImage && (
+              <div className="upload-progress">
+                <div className="spinner spinner-small"></div>
+                <span>Uploading photo to cloud storage...</span>
+              </div>
+            )}
           </div>
 
-          {formData.picture && (
-            <div className="image-preview">
-              <img src={formData.picture} alt="Preview" />
-              <div className="preview-label">
-                <ImageIcon className="preview-icon" />
-                Preview
-              </div>
-            </div>
-          )}
-
           <div className="modal-actions">
-            <button type="button" className="cancel-btn" onClick={onClose}>
+            <button 
+              type="button" 
+              className="cancel-btn" 
+              onClick={handleClose}
+              disabled={loading || uploadingImage}
+            >
               <CancelIcon className="btn-icon" />
               Cancel
             </button>
-            <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? (
+            <button 
+              type="submit" 
+              className="submit-btn" 
+              disabled={loading || uploadingImage}
+            >
+              {loading || uploadingImage ? (
                 <div className="spinner spinner-small"></div>
               ) : (
                 <>
