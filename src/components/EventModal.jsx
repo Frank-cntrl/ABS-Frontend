@@ -12,6 +12,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ImageIcon from '@mui/icons-material/Image';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 
 const EventModal = ({ 
     isOpen, 
@@ -25,9 +26,20 @@ const EventModal = ({
         description: '',
         location: '',
         date: '',
-        image: ''
+        image: '',
+        rsvpLink: ''
     });
     const [errors, setErrors] = useState({});
+
+    // Function to convert date to local datetime-local format
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
+        
+        const date = new Date(dateString);
+        // Adjust for timezone offset to get local time
+        const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+        return localDate.toISOString().slice(0, 16);
+    };
 
     // Handle body scroll when modal opens/closes
     useEffect(() => {
@@ -50,8 +62,9 @@ const EventModal = ({
                 title: editingEvent.title || '',
                 description: editingEvent.description || '',
                 location: editingEvent.location || '',
-                date: editingEvent.date ? new Date(editingEvent.date).toISOString().slice(0, 16) : '',
-                image: editingEvent.image || ''
+                date: formatDateForInput(editingEvent.date),
+                image: editingEvent.image || '',
+                rsvpLink: editingEvent.rsvpLink || ''
             });
         } else {
             setFormData({
@@ -59,7 +72,8 @@ const EventModal = ({
                 description: '',
                 location: '',
                 date: '',
-                image: ''
+                image: '',
+                rsvpLink: ''
             });
         }
         setErrors({});
@@ -96,7 +110,16 @@ const EventModal = ({
         if (!validateForm()) return;
 
         try {
-            await onSubmit(formData);
+            // Convert the local datetime back to ISO string for submission
+            const submitData = { ...formData };
+            if (submitData.date) {
+                // Create date object from the datetime-local input (which is in local time)
+                const localDate = new Date(submitData.date);
+                // Convert to ISO string (which will be in UTC)
+                submitData.date = localDate.toISOString();
+            }
+            
+            await onSubmit(submitData);
         } catch (error) {
             setErrors({ general: error.message || "Failed to save event. Please try again." });
         }
@@ -108,7 +131,8 @@ const EventModal = ({
             description: '',
             location: '',
             date: '',
-            image: ''
+            image: '',
+            rsvpLink: ''
         });
         setErrors({});
         onClose();
@@ -243,12 +267,34 @@ const EventModal = ({
                             disabled={loading}
                         />
                         {formData.image && (
-                            <div className="image-preview">
+                            <div className="modal-image-preview">
                                 <img src={formData.image} alt="Preview" />
-                                <div className="preview-label">
-                                    <ImageIcon className="preview-icon" />
+                                <div className="modal-preview-label">
+                                    <ImageIcon className="modal-preview-icon" />
                                     Preview
                                 </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="rsvpLink">
+                            <EventAvailableIcon className="label-icon" />
+                            RSVP Link (Optional)
+                        </label>
+                        <input
+                            type="url"
+                            id="rsvpLink"
+                            name="rsvpLink"
+                            value={formData.rsvpLink}
+                            onChange={handleInputChange}
+                            placeholder="https://forms.google.com/your-form-link"
+                            disabled={loading}
+                        />
+                        {formData.rsvpLink && (
+                            <div className="rsvp-preview">
+                                <EventAvailableIcon className="preview-icon" />
+                                <span>RSVP link will be available on event details page</span>
                             </div>
                         )}
                     </div>

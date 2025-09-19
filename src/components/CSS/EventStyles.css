@@ -301,7 +301,7 @@
   color: var(--primary-purple);
 }
 
-/* Event Card */
+/* Event Card - Replace the existing event card section with this */
 .event-card {
   background: white;
   border-radius: 20px;
@@ -309,6 +309,9 @@
   box-shadow: 0 10px 40px rgba(117, 56, 176, 0.15);
   transition: all 0.4s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 500px; /* Fixed total height */
 }
 
 .event-card:hover {
@@ -316,18 +319,53 @@
   box-shadow: 0 20px 60px rgba(117, 56, 176, 0.25);
 }
 
+/* Image section - exactly 200px */
 .event-image {
   width: 100%;
-  height: 200px;
+  height: 200px; /* Exactly 200px - no more, no less */
   overflow: hidden;
   position: relative;
+  flex-shrink: 0; /* Cannot shrink */
+  flex-grow: 0; /* Cannot grow */
+  background: var(--light-gradient); /* Fallback background */
 }
 
-.event-image img {
+.modal-event-image {
+  width: 100%;
+  max-height: 190px; /* Exactly 200px - no more, no less */
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0; /* Cannot shrink */
+  flex-grow: 100%; /* Cannot grow */
+  background: var(--light-gradient); /* Fallback background */
+}
+
+.modal-event-image img {
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.4s ease;
+  display: block;
+  transform: scale(1.0);
+}
+
+/* Default image for events without pictures */
+.default-event-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--light-gradient);
+}
+
+.default-event-icon {
+  font-size: 3rem !important;
+  color: white;
+  opacity: 0.7;
 }
 
 .image-overlay {
@@ -349,12 +387,20 @@
   opacity: 0.1;
 }
 
+/* Content section - fills remaining space */
 .event-content {
   padding: 2rem;
+  flex-grow: 1; /* Fill remaining space after image */
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 200px); /* Exact remaining space */
+  min-height: 0; /* Allow shrinking if needed */
 }
 
-.event-header {
+/* FIXED: Changed from .event-header to .event-card-header to avoid conflicts */
+.event-card-header {
   margin-bottom: 1rem;
+  flex-shrink: 0; /* Header doesn't shrink */
 }
 
 .event-title {
@@ -379,11 +425,15 @@
 }
 
 .date-icon, .location-icon {
-  font-size: 1rem;
+  font-size: 1rem !important;
 }
 
+/* Details section - expandable */
 .event-details {
-  margin-bottom: 1.5rem;
+  flex-grow: 1; /* Takes up available space */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow shrinking */
 }
 
 .event-location {
@@ -394,6 +444,7 @@
   font-size: 0.9rem;
   margin-bottom: 1rem;
   font-weight: 500;
+  flex-shrink: 0; /* Location doesn't shrink */
 }
 
 .event-description {
@@ -401,13 +452,18 @@
   line-height: 1.7;
   margin: 0;
   font-size: 0.95rem;
+  flex-grow: 1; /* Fill available space */
+  overflow: hidden; /* Hide overflow */
 }
 
+/* Actions section - always at bottom */
 .event-actions {
   display: flex;
   gap: 0.75rem;
   padding-top: 1.5rem;
   border-top: 2px solid #f0f0f0;
+  margin-top: auto; /* Push to very bottom */
+  flex-shrink: 0; /* Actions never shrink */
 }
 
 .edit-btn, .delete-btn {
@@ -426,7 +482,7 @@
 }
 
 .btn-icon {
-  font-size: 1rem;
+  font-size: 1rem !important;
 }
 
 .edit-btn {
@@ -450,7 +506,6 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
 }
-
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -612,3 +667,23 @@
 body.modal-open {
   overflow: hidden;
 }
+
+/* Add this to EventStyles.css */
+.rsvp-preview {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(190, 157, 222, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-purple);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.rsvp-preview .preview-icon {
+  font-size: 1rem !important;
+  color: var(--medium-purple);
+}
+

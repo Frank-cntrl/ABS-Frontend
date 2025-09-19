@@ -2,7 +2,12 @@ import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import axios from "axios";
 import "./AppStyles.css";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
 
@@ -14,6 +19,7 @@ import NotFound from "./components/NotFound";
 import UserPage from "./components/UserPage";
 import Eboard from "./components/Eboard";
 import Events from "./components/Events";
+import FullEventPage from "./components/FullEventPage";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -37,7 +43,7 @@ const App = () => {
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         console.log("No token found");
         setUser(null);
@@ -52,12 +58,12 @@ const App = () => {
         },
         withCredentials: true,
       });
-      
+
       console.log("Token valid, user:", response.data.user);
       setUser(response.data.user);
     } catch (error) {
       console.log("Token invalid or expired, removing...");
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       setUser(null);
     } finally {
       setLoading(false);
@@ -66,22 +72,25 @@ const App = () => {
 
   const handleLogout = async () => {
     console.log("Logging out...");
-    
+
     try {
-      const token = localStorage.getItem('token');
-      
+      const token = localStorage.getItem("token");
+
       // Clear local state first
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       setUser(null);
 
       // Logout from backend if we had a token
       if (token) {
-        await axios.post(`${API_URL}/auth/logout`, {}, {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        });
+        await axios.post(
+          `${API_URL}/auth/logout`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
+        );
       }
-
     } catch (error) {
       console.error("Backend logout error:", error);
     } finally {
@@ -100,10 +109,11 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/" element={<Home />} />
-          <Route path="/me" element={<UserPage user={user}/>} />
-          <Route path="/events" element={<Events user={user}/> }/>
-          <Route path="/eboard" element={<Eboard user={user}/> }/>
-          <Route path="*" element={<NotFound/>} />
+          <Route path="/me" element={<UserPage user={user} />} />
+          <Route path="/events" element={<Events user={user} />} />
+          <Route path="/events/:id" element={<FullEventPage />} />
+          <Route path="/eboard" element={<Eboard user={user} />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </div>
