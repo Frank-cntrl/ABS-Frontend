@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
 import "./CSS/EboardStyles.css";
+import ImageCropModal from './ImageCropModal';
 
 // MUI Components and Icons
 import CloseIcon from '@mui/icons-material/Close';
@@ -31,6 +32,8 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
 
   // Year options
   const yearOptions = [
@@ -99,7 +102,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     }
   };
 
-  // Handle file selection
+  // Handle file selection - opens crop modal
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -121,14 +124,9 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
         return;
       }
 
-      setImageFile(file);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target.result);
-      };
-      reader.readAsDataURL(file);
+      // Store the file and open crop modal
+      setSelectedImageFile(file);
+      setShowCropModal(true);
 
       // Clear picture errors
       if (errors.picture) {
@@ -137,6 +135,33 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
           picture: ''
         }));
       }
+    }
+  };
+
+  // Handle crop completion
+  const handleCropComplete = (croppedFile) => {
+    setImageFile(croppedFile);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target.result);
+    };
+    reader.readAsDataURL(croppedFile);
+    
+    setShowCropModal(false);
+    setSelectedImageFile(null);
+  };
+
+  // Handle crop cancel
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    setSelectedImageFile(null);
+    
+    // Clear the file input
+    const fileInput = document.getElementById("imageFile");
+    if (fileInput) {
+      fileInput.value = "";
     }
   };
 
@@ -260,6 +285,8 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     setImageFile(null);
     setImagePreview('');
     setUploadingImage(false);
+    setShowCropModal(false);
+    setSelectedImageFile(null);
     onClose();
   };
 
@@ -282,7 +309,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               </>
             )}
           </h2>
-          <button className="modal-close" onClick={handleClose} disabled={loading || uploadingImage}>
+          <button className="modal-close" onClick={handleClose} disabled={loading || uploadingImage || showCropModal}>
             <CloseIcon />
           </button>
         </div>
@@ -307,7 +334,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="Enter member's name"
                 className={errors.name ? 'error' : ''}
-                disabled={loading || uploadingImage}
+                disabled={loading || uploadingImage || showCropModal}
               />
               {errors.name && <span className="error">{errors.name}</span>}
             </div>
@@ -323,7 +350,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                   value={formData.year}
                   onChange={handleChange}
                   displayEmpty
-                  disabled={loading || uploadingImage}
+                  disabled={loading || uploadingImage || showCropModal}
                   className="year-select"
                   sx={{
                     '& .MuiOutlinedInput-root': {
@@ -374,7 +401,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="e.g., Computer Science, Business"
                 className={errors.major ? 'error' : ''}
-                disabled={loading || uploadingImage}
+                disabled={loading || uploadingImage || showCropModal}
               />
               {errors.major && <span className="error">{errors.major}</span>}
             </div>
@@ -391,7 +418,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="e.g., President, Marketing Lead"
                 className={errors.role ? 'error' : ''}
-                disabled={loading || uploadingImage}
+                disabled={loading || uploadingImage || showCropModal}
               />
               {errors.role && <span className="error">{errors.role}</span>}
             </div>
@@ -409,7 +436,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               placeholder="Tell us about this member..."
               rows="4"
               className={errors.description ? 'error' : ''}
-              disabled={loading || uploadingImage}
+              disabled={loading || uploadingImage || showCropModal}
             />
             {errors.description && <span className="error">{errors.description}</span>}
           </div>
@@ -427,14 +454,14 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 <span>
                   {imageFile ? imageFile.name : (editingMember && formData.picture ? 'Change photo' : 'Choose photo file')}
                 </span>
-                <small>Max 10MB - JPG, PNG, GIF</small>
+                <small>Max 10MB - JPG, PNG, GIF - Will open crop tool</small>
               </label>
               <input
                 type="file"
                 id="imageFile"
                 accept="image/*"
                 onChange={handleImageChange}
-                disabled={loading || uploadingImage}
+                disabled={loading || uploadingImage || showCropModal}
                 className="file-input"
               />
               
@@ -443,7 +470,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                   type="button"
                   onClick={clearImageSelection}
                   className="clear-file-btn"
-                  disabled={loading || uploadingImage}
+                  disabled={loading || uploadingImage || showCropModal}
                 >
                   {imageFile ? 'Clear Selected File' : 'Remove Photo'}
                 </button>
@@ -484,7 +511,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               type="button" 
               className="cancel-btn" 
               onClick={handleClose}
-              disabled={loading || uploadingImage}
+              disabled={loading || uploadingImage || showCropModal}
             >
               <CancelIcon className="btn-icon" />
               Cancel
@@ -492,7 +519,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
             <button 
               type="submit" 
               className="submit-btn" 
-              disabled={loading || uploadingImage}
+              disabled={loading || uploadingImage || showCropModal}
             >
               {loading || uploadingImage ? (
                 <div className="spinner spinner-small"></div>
@@ -506,6 +533,15 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
           </div>
         </form>
       </div>
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        isOpen={showCropModal}
+        onClose={handleCropCancel}
+        onCropComplete={handleCropComplete}
+        imageFile={selectedImageFile}
+        aspectRatio={1} // Square ratio for member photos
+      />
     </div>
   );
 };

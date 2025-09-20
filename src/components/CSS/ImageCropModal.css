@@ -1,0 +1,295 @@
+/* Image Crop Modal Styles */
+.crop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 135vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow: hidden !important;
+}
+
+.crop-modal-content {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 95vh;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(117, 56, 176, 0.4);
+  animation: cropModalSlideIn 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.crop-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid #f0f0f0;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  flex-shrink: 0;
+}
+
+.crop-modal-header h2 {
+  margin: 0;
+  color: #7538b0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crop-icon {
+  font-size: 1.5rem !important;
+  color: #9966c7;
+}
+
+.crop-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666666;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crop-modal-close:hover {
+  background: #be9dde;
+  color: white;
+}
+
+.crop-container {
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8f9fa;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.crop-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Override react-image-crop styles */
+.ReactCrop {
+  display: inline-block;
+  position: relative;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.ReactCrop__crop-selection {
+  border: 3px solid #7538b0 !important;
+  background: rgba(117, 56, 176, 0.15) !important;
+  box-shadow: 0 0 0 9999em rgba(0, 0, 0, 0.5);
+}
+
+.ReactCrop__drag-handle {
+  border: 3px solid #7538b0 !important;
+  background: white !important;
+  border-radius: 50% !important;
+  width: 16px !important;
+  height: 16px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.ReactCrop__drag-handle:after {
+  display: none !important;
+}
+
+.ReactCrop__rule-of-thirds-vt,
+.ReactCrop__rule-of-thirds-hz {
+  border-color: rgba(255, 255, 255, 0.7) !important;
+  border-width: 1px !important;
+}
+
+.crop-instructions {
+  padding: 0.75rem 2rem;
+  text-align: center;
+  color: #666666;
+  font-size: 0.9rem;
+  font-style: italic;
+  background: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.crop-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding: 1.5rem 2rem;
+  border-top: 2px solid #f0f0f0;
+  background: white;
+  border-radius: 0 0 20px 20px;
+  flex-shrink: 0;
+}
+
+.crop-cancel-btn,
+.crop-apply-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.crop-cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.crop-cancel-btn:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+.crop-apply-btn {
+  background: linear-gradient(135deg, #7538b0, #9966c7);
+  color: white;
+  box-shadow: 0 4px 15px rgba(117, 56, 176, 0.3);
+}
+
+.crop-apply-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(117, 56, 176, 0.4);
+}
+
+.crop-apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-icon {
+  font-size: 1rem !important;
+}
+
+/* Animations */
+@keyframes cropModalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* STRONGER body scroll prevention when crop modal is open */
+body.crop-modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Make sure html doesn't scroll either */
+html.crop-modal-open {
+  overflow: hidden !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .crop-modal-overlay {
+    padding-bottom: 150px;
+    min-height: 1200px;
+  }
+
+
+  .crop-modal-content {
+    max-width: 100%;
+    max-height: 100vh;
+    min-height: 500px;
+  }
+
+  .crop-modal-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .crop-modal-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .crop-container {
+    padding: 0.75rem 1rem;
+  }
+
+  .crop-instructions {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .crop-modal-actions {
+    flex-direction: column;
+    padding: 1rem 1.5rem;
+  }
+
+  .crop-cancel-btn,
+  .crop-apply-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .crop-modal-overlay {
+    padding-bottom: 500px;
+    min-height: 1160px;
+  }
+
+  .crop-modal-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .crop-container {
+    padding: 0.5rem;
+  }
+
+  .crop-instructions {
+    padding: 0.5rem;
+  }
+
+  .crop-modal-actions {
+    padding: 0.75rem 1rem;
+  }
+
+  .crop-modal-content {
+    min-height: 450px;
+  }
+}

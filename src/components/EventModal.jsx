@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
 import "./CSS/EventStyles.css";
+import ImageCropModal from './ImageCropModal';
 
 // MUI Icons
 import CloseIcon from "@mui/icons-material/Close";
@@ -36,6 +37,8 @@ const EventModal = ({
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
 
   // Function to convert date to local datetime-local format
   const formatDateForInput = (dateString) => {
@@ -107,7 +110,7 @@ const EventModal = ({
     }
   };
 
-  // Handle file selection
+  // Handle file selection - opens crop modal
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -129,14 +132,9 @@ const EventModal = ({
         return;
       }
 
-      setImageFile(file);
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target.result);
-      };
-      reader.readAsDataURL(file);
+      // Store the file and open crop modal
+      setSelectedImageFile(file);
+      setShowCropModal(true);
 
       // Clear image errors
       if (errors.image) {
@@ -145,6 +143,33 @@ const EventModal = ({
           image: "",
         }));
       }
+    }
+  };
+
+  // Handle crop completion
+  const handleCropComplete = (croppedFile) => {
+    setImageFile(croppedFile);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target.result);
+    };
+    reader.readAsDataURL(croppedFile);
+    
+    setShowCropModal(false);
+    setSelectedImageFile(null);
+  };
+
+  // Handle crop cancel
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    setSelectedImageFile(null);
+    
+    // Clear the file input
+    const fileInput = document.getElementById("imageFile");
+    if (fileInput) {
+      fileInput.value = "";
     }
   };
 
@@ -239,6 +264,8 @@ const EventModal = ({
     setImageFile(null);
     setImagePreview("");
     setUploadingImage(false);
+    setShowCropModal(false);
+    setSelectedImageFile(null);
     onClose();
   };
 
@@ -392,14 +419,14 @@ const EventModal = ({
                     ? "Change image"
                     : "Choose image file"}
                 </span>
-                <small>Max 10MB - JPG, PNG, GIF</small>
+                <small>Max 10MB - JPG, PNG, GIF - Will open crop tool</small>
               </label>
               <input
                 type="file"
                 id="imageFile"
                 accept="image/*"
                 onChange={handleImageChange}
-                disabled={loading || uploadingImage}
+                disabled={loading || uploadingImage || showCropModal}
                 className="file-input"
               />
 
@@ -408,7 +435,7 @@ const EventModal = ({
                   type="button"
                   onClick={clearImageSelection}
                   className="clear-file-btn"
-                  disabled={loading || uploadingImage}
+                  disabled={loading || uploadingImage || showCropModal}
                 >
                   {imageFile ? "Clear Selected File" : "Remove Image"}
                 </button>
@@ -464,7 +491,7 @@ const EventModal = ({
               type="button"
               onClick={handleClose}
               className="cancel-btn"
-              disabled={loading || uploadingImage}
+              disabled={loading || uploadingImage || showCropModal}
             >
               <CancelIcon className="btn-icon" />
               Cancel
@@ -472,7 +499,7 @@ const EventModal = ({
             <button
               type="submit"
               className="submit-btn"
-              disabled={loading || uploadingImage}
+              disabled={loading || uploadingImage || showCropModal}
             >
               {loading || uploadingImage ? (
                 <div className="spinner spinner-small"></div>
@@ -486,6 +513,15 @@ const EventModal = ({
           </div>
         </form>
       </div>
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        isOpen={showCropModal}
+        onClose={handleCropCancel}
+        onCropComplete={handleCropComplete}
+        imageFile={selectedImageFile}
+        aspectRatio={16/9} // Standard event image ratio
+      />
     </div>
   );
 };

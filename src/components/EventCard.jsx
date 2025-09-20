@@ -47,7 +47,11 @@ const EventCard = ({ event, isAdmin, onEdit, onDelete }) => {
     };
 
     return (
-        <div className="event-card" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
+        <div 
+            className={`event-card ${isAdmin ? 'admin-card' : 'user-card'}`}
+            onClick={handleCardClick} 
+            style={{ cursor: 'pointer' }}
+        >
             {/* Always render image container for consistent layout */}
             <div className="modal-event-image">
                 {event.image ? (
@@ -69,21 +73,15 @@ const EventCard = ({ event, isAdmin, onEdit, onDelete }) => {
                     </div>
                 </div>
 
-                {/* <div className="event-details">
-                    {event.location && (
-                        <div className="event-location">
-                            <LocationOnIcon className="location-icon" />
-                            <span>{event.location}</span>
-                        </div>
-                    )}
-                    
-                    <p className="event-description">
-                        {event.description && event.description.length > 150 
-                            ? `${event.description.substring(0, 150)}...`
-                            : event.description}
-                    </p>
-                </div> */}
+                {/* Only show location if it exists - no empty wrapper */}
+                {event.location && (
+                    <div className="event-location">
+                        <LocationOnIcon className="location-icon" />
+                        <span>{event.location}</span>
+                    </div>
+                )}
 
+                {/* Admin actions at bottom */}
                 {isAdmin && (
                     <div className="event-actions">
                         <button 
