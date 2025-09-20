@@ -17,6 +17,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CropIcon from '@mui/icons-material/Crop';
 import { FormControl, Select, MenuItem } from '@mui/material';
 
 const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
@@ -30,10 +31,11 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
   });
   const [errors, setErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
+  const [originalImageFile, setOriginalImageFile] = useState(null); // Store original uncropped file
   const [imagePreview, setImagePreview] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
-  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [needsCropping, setNeedsCropping] = useState(false);
 
   // Year options
   const yearOptions = [
@@ -72,6 +74,8 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
       // Show existing image as preview if available
       setImagePreview(editingMember.picture || '');
       setImageFile(null);
+      setOriginalImageFile(null);
+      setNeedsCropping(false);
     } else {
       setFormData({
         name: '',
@@ -83,6 +87,8 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
       });
       setImagePreview('');
       setImageFile(null);
+      setOriginalImageFile(null);
+      setNeedsCropping(false);
     }
     setErrors({});
   }, [editingMember, isOpen]);
@@ -102,7 +108,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     }
   };
 
-  // Handle file selection - simplified
+  // Handle file selection - now just stores the file and shows preview
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -132,8 +138,22 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
         }));
       }
 
-      // Just open the crop modal - it will handle positioning itself
-      setSelectedImageFile(file);
+      // Store the original file and create preview
+      setOriginalImageFile(file);
+      setImageFile(null); // Clear any cropped version
+      setNeedsCropping(true); // Mark as needing cropping
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Open crop modal with the original file
+  const handleCropImage = () => {
+    if (originalImageFile) {
       setShowCropModal(true);
     }
   };
@@ -141,8 +161,9 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
   // Handle crop completion
   const handleCropComplete = (croppedFile) => {
     setImageFile(croppedFile);
+    setNeedsCropping(false); // Mark as cropped
     
-    // Create preview
+    // Create preview from cropped file
     const reader = new FileReader();
     reader.onload = (e) => {
       setImagePreview(e.target.result);
@@ -150,24 +171,17 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     reader.readAsDataURL(croppedFile);
     
     setShowCropModal(false);
-    setSelectedImageFile(null);
   };
 
   // Handle crop cancel
   const handleCropCancel = () => {
     setShowCropModal(false);
-    setSelectedImageFile(null);
-    
-    // Clear the file input
-    const fileInput = document.getElementById("imageFile");
-    if (fileInput) {
-      fileInput.value = "";
-    }
   };
 
   // Upload image to Cloudinary
   const uploadImage = async () => {
-    if (!imageFile) {
+    // If no image file selected
+    if (!imageFile && !originalImageFile) {
       // If no new file and image was cleared, return empty string
       if (!imagePreview && !formData.picture) {
         return '';
@@ -176,8 +190,11 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
       return formData.picture;
     }
     
+    // Use cropped version if available, otherwise original
+    const fileToUpload = imageFile || originalImageFile;
+    
     const formDataUpload = new FormData();
-    formDataUpload.append('image', imageFile);
+    formDataUpload.append('image', fileToUpload);
     
     try {
       setUploadingImage(true);
@@ -201,7 +218,9 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
   // Clear file selection
   const clearImageSelection = () => {
     setImageFile(null);
+    setOriginalImageFile(null);
     setImagePreview('');
+    setNeedsCropping(false);
     
     // Clear the file input
     const fileInput = document.getElementById('imageFile');
@@ -283,10 +302,11 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     });
     setErrors({});
     setImageFile(null);
+    setOriginalImageFile(null);
     setImagePreview('');
     setUploadingImage(false);
     setShowCropModal(false);
-    setSelectedImageFile(null);
+    setNeedsCropping(false);
     onClose();
   };
 
@@ -309,7 +329,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               </>
             )}
           </h2>
-          <button className="modal-close" onClick={handleClose} disabled={loading || uploadingImage || showCropModal}>
+          <button className="modal-close" onClick={handleClose} disabled={loading || uploadingImage}>
             <CloseIcon />
           </button>
         </div>
@@ -334,7 +354,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="Enter member's name"
                 className={errors.name ? 'error' : ''}
-                disabled={loading || uploadingImage || showCropModal}
+                disabled={loading || uploadingImage}
               />
               {errors.name && <span className="error">{errors.name}</span>}
             </div>
@@ -350,7 +370,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                   value={formData.year}
                   onChange={handleChange}
                   displayEmpty
-                  disabled={loading || uploadingImage || showCropModal}
+                  disabled={loading || uploadingImage}
                   className="year-select"
                   sx={{
                     '& .MuiOutlinedInput-root': {
@@ -401,7 +421,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="e.g., Computer Science, Business"
                 className={errors.major ? 'error' : ''}
-                disabled={loading || uploadingImage || showCropModal}
+                disabled={loading || uploadingImage}
               />
               {errors.major && <span className="error">{errors.major}</span>}
             </div>
@@ -418,7 +438,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 onChange={handleChange}
                 placeholder="e.g., President, Marketing Lead"
                 className={errors.role ? 'error' : ''}
-                disabled={loading || uploadingImage || showCropModal}
+                disabled={loading || uploadingImage}
               />
               {errors.role && <span className="error">{errors.role}</span>}
             </div>
@@ -436,7 +456,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               placeholder="Tell us about this member..."
               rows="4"
               className={errors.description ? 'error' : ''}
-              disabled={loading || uploadingImage || showCropModal}
+              disabled={loading || uploadingImage}
             />
             {errors.description && <span className="error">{errors.description}</span>}
           </div>
@@ -452,27 +472,27 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               <label htmlFor="imageFile" className="file-upload-label">
                 <CloudUploadIcon className="upload-icon" />
                 <span>
-                  {imageFile ? imageFile.name : (editingMember && formData.picture ? 'Change photo' : 'Choose photo file')}
+                  {originalImageFile ? originalImageFile.name : (editingMember && formData.picture ? 'Change photo' : 'Choose photo file')}
                 </span>
-                <small>Max 10MB - JPG, PNG, GIF - Will open crop tool</small>
+                <small>Max 10MB - JPG, PNG, GIF - 1.78:1 aspect ratio recommended</small>
               </label>
               <input
                 type="file"
                 id="imageFile"
                 accept="image/*"
                 onChange={handleImageChange}
-                disabled={loading || uploadingImage || showCropModal}
+                disabled={loading || uploadingImage}
                 className="file-input"
               />
               
-              {(imageFile || imagePreview) && (
+              {(originalImageFile || imagePreview) && (
                 <button
                   type="button"
                   onClick={clearImageSelection}
                   className="clear-file-btn"
-                  disabled={loading || uploadingImage || showCropModal}
+                  disabled={loading || uploadingImage}
                 >
-                  {imageFile ? 'Clear Selected File' : 'Remove Photo'}
+                  {originalImageFile ? 'Clear Selected File' : 'Remove Photo'}
                 </button>
               )}
             </div>
@@ -481,6 +501,38 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               <span className="error">
                 {errors.picture}
               </span>
+            )}
+
+            {/* Crop button - shows when image is uploaded but not cropped */}
+            {originalImageFile && needsCropping && (
+              <div className="crop-button-section">
+                <button
+                  type="button"
+                  onClick={handleCropImage}
+                  className="crop-image-btn"
+                  disabled={loading || uploadingImage}
+                >
+                  <CropIcon className="btn-icon" />
+                  Crop Image to 1.78:1 Ratio
+                </button>
+                <small className="crop-hint">Click to crop your image to the optimal 1.78:1 aspect ratio</small>
+              </div>
+            )}
+
+            {/* Show cropped status */}
+            {originalImageFile && !needsCropping && imageFile && (
+              <div className="crop-status">
+                <CropIcon className="crop-status-icon" />
+                <span>Image cropped successfully!</span>
+                <button
+                  type="button"
+                  onClick={handleCropImage}
+                  className="recrop-btn"
+                  disabled={loading || uploadingImage}
+                >
+                  Crop Again
+                </button>
+              </div>
             )}
 
             {/* Image preview */}
@@ -492,7 +544,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
                 />
                 <div className="modal-preview-label">
                   <ImageIcon className="modal-preview-icon" />
-                  {uploadingImage ? 'Uploading...' : 'Preview'}
+                  {uploadingImage ? 'Uploading...' : (needsCropping ? 'Preview - Click Crop Button' : 'Preview - Cropped')}
                 </div>
               </div>
             )}
@@ -511,7 +563,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
               type="button" 
               className="cancel-btn" 
               onClick={handleClose}
-              disabled={loading || uploadingImage || showCropModal}
+              disabled={loading || uploadingImage}
             >
               <CancelIcon className="btn-icon" />
               Cancel
@@ -519,7 +571,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
             <button 
               type="submit" 
               className="submit-btn" 
-              disabled={loading || uploadingImage || showCropModal}
+              disabled={loading || uploadingImage}
             >
               {loading || uploadingImage ? (
                 <div className="spinner spinner-small"></div>
@@ -539,8 +591,8 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
         isOpen={showCropModal}
         onClose={handleCropCancel}
         onCropComplete={handleCropComplete}
-        imageFile={selectedImageFile}
-        aspectRatio={1} // Square ratio for member photos
+        imageFile={originalImageFile}
+        aspectRatio={1.78} // 1.78:1 aspect ratio
       />
     </div>
   );

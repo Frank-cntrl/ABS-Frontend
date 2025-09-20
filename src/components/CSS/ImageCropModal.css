@@ -12,8 +12,8 @@
   display: flex;
   align-items: center; /* Center vertically */
   justify-content: center;
-  z-index: 99999;
-  padding: 80px 1rem 1rem 1rem; /* Top padding for navbar clearance */
+  z-index: 99999; /* Higher than other modals */
+  padding: 0; /* Remove all padding - let the content handle positioning */
   box-sizing: border-box;
   overflow: hidden; /* Prevent scrolling */
 }
@@ -21,17 +21,19 @@
 .crop-modal-content {
   background: white;
   border-radius: 20px;
-  width: 100%;
+  width: 90vw;
   max-width: 900px;
-  height: calc(100vh - 100px); /* Fixed height based on available viewport */
-  height: calc(100dvh - 100px);
-  max-height: 700px; /* Maximum height to ensure it fits on smaller screens */
+  height: 85vh; /* Use percentage of viewport height */
+  height: 85dvh;
+  min-height: 500px; /* Minimum height */
+  max-height: 700px; /* Maximum height to ensure it fits */
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(117, 56, 176, 0.4);
   animation: cropModalSlideIn 0.3s ease;
   position: relative;
   overflow: hidden; /* Prevent any overflow */
+  margin: auto; /* Center it */
 }
 
 .crop-modal-header {
@@ -216,6 +218,36 @@
   font-size: 1rem;
 }
 
+/* Crop button in main modals */
+.crop-image-btn {
+  background: linear-gradient(135deg, #7538b0, #9966c7);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 15px rgba(117, 56, 176, 0.3);
+}
+
+.crop-image-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(117, 56, 176, 0.4);
+}
+
+.crop-image-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Animations */
 @keyframes cropModalSlideIn {
   from {
@@ -228,26 +260,12 @@
   }
 }
 
-/* Only disable scrolling on underlying modals, not the body */
-body.crop-modal-open .modal-content {
-  overflow: hidden;
-  touch-action: none;
-}
-
-body.crop-modal-open .modal-overlay {
-  overflow: hidden;
-  touch-action: none;
-}
-
 /* Desktop specific improvements */
 @media (min-width: 769px) {
-  .crop-modal-overlay {
-    padding: 100px 2rem 20px 2rem; /* Balanced padding */
-  }
-
   .crop-modal-content {
-    height: calc(100vh - 140px); /* Account for larger padding */
-    height: calc(100dvh - 140px);
+    width: 85vw;
+    height: 80vh; /* Use less height on desktop */
+    height: 80dvh;
     max-height: 800px; /* Larger max height on desktop */
   }
 
@@ -277,17 +295,17 @@ body.crop-modal-open .modal-overlay {
 /* Mobile responsive with better viewport handling */
 @media (max-width: 768px) {
   .crop-modal-overlay {
-    padding: 80px 0.5rem 10px 0.5rem;
     height: 100vh;
     height: 100dvh; /* Dynamic viewport for mobile */
     min-height: -webkit-fill-available; /* iOS Safari fallback */
   }
 
   .crop-modal-content {
-    max-width: 100%;
-    height: calc(100vh - 100px);
-    height: calc(100dvh - 100px);
+    width: 95vw;
+    height: 90vh;
+    height: 90dvh;
     max-height: 600px; /* Smaller max height on mobile */
+    min-height: 450px;
   }
 
   .crop-container {
@@ -328,17 +346,12 @@ body.crop-modal-open .modal-overlay {
 }
 
 @media (max-width: 480px) {
-  .crop-modal-overlay {
-    padding: 60px 0.25rem 10px 0.25rem;
-    height: 100vh;
-    height: 100dvh;
-    min-height: -webkit-fill-available; /* iOS Safari specific */
-  }
-
   .crop-modal-content {
-    height: calc(100vh - 80px);
-    height: calc(100dvh - 80px);
+    width: 98vw;
+    height: 85vh;
+    height: 85dvh;
     max-height: 500px; /* Even smaller on tiny screens */
+    min-height: 400px;
   }
 
   .crop-container {
@@ -378,7 +391,7 @@ body.crop-modal-open .modal-overlay {
   }
 
   .crop-modal-content {
-    height: calc(100vh - 100px);
+    height: 85vh;
   }
 
   @media (max-width: 768px) {
@@ -388,13 +401,13 @@ body.crop-modal-open .modal-overlay {
     }
 
     .crop-modal-content {
-      height: calc(100vh - 100px);
+      height: 90vh;
     }
   }
 
   @media (max-width: 480px) {
     .crop-modal-content {
-      height: calc(100vh - 80px);
+      height: 85vh;
     }
   }
 }
@@ -402,16 +415,10 @@ body.crop-modal-open .modal-overlay {
 /* Focus styles for accessibility */
 .crop-modal-close:focus,
 .crop-cancel-btn:focus,
-.crop-apply-btn:focus {
+.crop-apply-btn:focus,
+.crop-image-btn:focus {
   outline: 3px solid #be9dde;
   outline-offset: 2px;
-}
-
-/* Smooth scrolling disabled since we have fixed height */
-@media (prefers-reduced-motion: no-preference) {
-  .crop-modal-content {
-    scroll-behavior: auto; /* Disable smooth scrolling since no scroll */
-  }
 }
 
 /* High DPI display adjustments */
@@ -424,7 +431,8 @@ body.crop-modal-open .modal-overlay {
 /* Landscape orientation adjustments for mobile */
 @media (max-width: 768px) and (orientation: landscape) {
   .crop-modal-content {
-    max-height: 90vh; /* Use more of the viewport in landscape */
+    height: 95vh; /* Use more of the viewport in landscape */
+    max-height: none; /* Remove max-height in landscape */
   }
 
   .crop-container {

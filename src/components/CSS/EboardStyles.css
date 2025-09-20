@@ -11,6 +11,7 @@
   --shadow: rgba(117, 56, 176, 0.2);
   --shadow-hover: rgba(117, 56, 176, 0.3);
   --danger-red: #dc3545;
+  --success-green: #28a745;
 }
 
 /* Eboard Container */
@@ -505,6 +506,87 @@
   transform: translateY(-1px);
 }
 
+/* Crop Button Section */
+.crop-button-section {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.crop-image-btn {
+  background: var(--purple-gradient);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+}
+
+.crop-image-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--shadow-hover);
+}
+
+.crop-image-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 15px var(--shadow);
+}
+
+.crop-hint {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--text-light);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* Crop Status */
+.crop-status {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--success-green);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.crop-status-icon {
+  font-size: 1.1rem !important;
+  color: var(--success-green);
+}
+
+.recrop-btn {
+  background: none;
+  border: 1px solid var(--success-green);
+  color: var(--success-green);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-left: auto;
+  transition: all 0.3s ease;
+}
+
+.recrop-btn:hover {
+  background: var(--success-green);
+  color: white;
+}
+
 /* Image Preview */
 .modal-image-preview {
   margin-top: 1rem;
@@ -738,6 +820,11 @@ body.modal-open {
   .member-info {
     gap: 0.5rem;
   }
+
+  .crop-image-btn {
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -769,6 +856,15 @@ body.modal-open {
   .member-content {
     padding: 1rem;
   }
+
+  .crop-image-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+  }
+
+  .crop-hint {
+    font-size: 0.75rem;
+  }
 }
 
 /* Focus styles for accessibility */
@@ -778,7 +874,9 @@ body.modal-open {
 .cancel-btn:focus,
 .edit-btn:focus,
 .delete-btn:focus,
-.modal-close:focus {
+.modal-close:focus,
+.crop-image-btn:focus,
+.recrop-btn:focus {
   outline: 3px solid var(--light-purple);
   outline-offset: 2px;
 }

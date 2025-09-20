@@ -17,6 +17,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CropIcon from "@mui/icons-material/Crop";
 
 const EventModal = ({
   isOpen,
@@ -35,10 +36,11 @@ const EventModal = ({
   });
   const [errors, setErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
+  const [originalImageFile, setOriginalImageFile] = useState(null); // Store original uncropped file
   const [imagePreview, setImagePreview] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
-  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [needsCropping, setNeedsCropping] = useState(false);
 
   // Function to convert date to local datetime-local format
   const formatDateForInput = (dateString) => {
@@ -80,6 +82,8 @@ const EventModal = ({
       // Show existing image as preview if available
       setImagePreview(editingEvent.image || "");
       setImageFile(null);
+      setOriginalImageFile(null);
+      setNeedsCropping(false);
     } else {
       setFormData({
         title: "",
@@ -91,6 +95,8 @@ const EventModal = ({
       });
       setImagePreview("");
       setImageFile(null);
+      setOriginalImageFile(null);
+      setNeedsCropping(false);
     }
     setErrors({});
   }, [editingEvent, isOpen]);
@@ -110,7 +116,7 @@ const EventModal = ({
     }
   };
 
-  // Handle file selection - simplified
+  // Handle file selection - now just stores the file and shows preview
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -140,8 +146,22 @@ const EventModal = ({
         }));
       }
 
-      // Just open the crop modal - it will handle positioning itself
-      setSelectedImageFile(file);
+      // Store the original file and create preview
+      setOriginalImageFile(file);
+      setImageFile(null); // Clear any cropped version
+      setNeedsCropping(true); // Mark as needing cropping
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Open crop modal with the original file
+  const handleCropImage = () => {
+    if (originalImageFile) {
       setShowCropModal(true);
     }
   };
@@ -149,8 +169,9 @@ const EventModal = ({
   // Handle crop completion
   const handleCropComplete = (croppedFile) => {
     setImageFile(croppedFile);
+    setNeedsCropping(false); // Mark as cropped
     
-    // Create preview
+    // Create preview from cropped file
     const reader = new FileReader();
     reader.onload = (e) => {
       setImagePreview(e.target.result);
@@ -158,24 +179,17 @@ const EventModal = ({
     reader.readAsDataURL(croppedFile);
     
     setShowCropModal(false);
-    setSelectedImageFile(null);
   };
 
   // Handle crop cancel
   const handleCropCancel = () => {
     setShowCropModal(false);
-    setSelectedImageFile(null);
-    
-    // Clear the file input
-    const fileInput = document.getElementById("imageFile");
-    if (fileInput) {
-      fileInput.value = "";
-    }
   };
 
   // Upload image to Cloudinary
   const uploadImage = async () => {
-    if (!imageFile) {
+    // If no image file selected
+    if (!imageFile && !originalImageFile) {
       // If no new file and image was cleared, return empty string
       if (!imagePreview && !formData.image) {
         return "";
@@ -184,8 +198,11 @@ const EventModal = ({
       return formData.image;
     }
 
+    // Use cropped version if available, otherwise original
+    const fileToUpload = imageFile || originalImageFile;
+
     const formDataUpload = new FormData();
-    formDataUpload.append("image", imageFile);
+    formDataUpload.append("image", fileToUpload);
 
     try {
       setUploadingImage(true);
@@ -262,16 +279,19 @@ const EventModal = ({
     });
     setErrors({});
     setImageFile(null);
+    setOriginalImageFile(null);
     setImagePreview("");
     setUploadingImage(false);
     setShowCropModal(false);
-    setSelectedImageFile(null);
+    setNeedsCropping(false);
     onClose();
   };
 
   const clearImageSelection = () => {
     setImageFile(null);
+    setOriginalImageFile(null);
     setImagePreview("");
+    setNeedsCropping(false);
 
     // Clear the file input
     const fileInput = document.getElementById("imageFile");
@@ -413,36 +433,68 @@ const EventModal = ({
               <label htmlFor="imageFile" className="file-upload-label">
                 <CloudUploadIcon className="upload-icon" />
                 <span>
-                  {imageFile
-                    ? imageFile.name
+                  {originalImageFile
+                    ? originalImageFile.name
                     : editingEvent && formData.image
                     ? "Change image"
                     : "Choose image file"}
                 </span>
-                <small>Max 10MB - JPG, PNG, GIF - Will open crop tool</small>
+                <small>Max 10MB - JPG, PNG, GIF - 1.78:1 aspect ratio recommended</small>
               </label>
               <input
                 type="file"
                 id="imageFile"
                 accept="image/*"
                 onChange={handleImageChange}
-                disabled={loading || uploadingImage || showCropModal}
+                disabled={loading || uploadingImage}
                 className="file-input"
               />
 
-              {(imageFile || imagePreview) && (
+              {(originalImageFile || imagePreview) && (
                 <button
                   type="button"
                   onClick={clearImageSelection}
                   className="clear-file-btn"
-                  disabled={loading || uploadingImage || showCropModal}
+                  disabled={loading || uploadingImage}
                 >
-                  {imageFile ? "Clear Selected File" : "Remove Image"}
+                  {originalImageFile ? "Clear Selected File" : "Remove Image"}
                 </button>
               )}
             </div>
 
             {errors.image && <span className="error">{errors.image}</span>}
+
+            {/* Crop button - shows when image is uploaded but not cropped */}
+            {originalImageFile && needsCropping && (
+              <div className="crop-button-section">
+                <button
+                  type="button"
+                  onClick={handleCropImage}
+                  className="crop-image-btn"
+                  disabled={loading || uploadingImage}
+                >
+                  <CropIcon className="btn-icon" />
+                  Crop Image to 1.78:1 Ratio
+                </button>
+                <small className="crop-hint">Click to crop your image to the optimal 1.78:1 aspect ratio</small>
+              </div>
+            )}
+
+            {/* Show cropped status */}
+            {originalImageFile && !needsCropping && imageFile && (
+              <div className="crop-status">
+                <CropIcon className="crop-status-icon" />
+                <span>Image cropped successfully!</span>
+                <button
+                  type="button"
+                  onClick={handleCropImage}
+                  className="recrop-btn"
+                  disabled={loading || uploadingImage}
+                >
+                  Crop Again
+                </button>
+              </div>
+            )}
 
             {/* Image preview */}
             {imagePreview && (
@@ -450,7 +502,7 @@ const EventModal = ({
                 <img src={imagePreview} alt="Preview" />
                 <div className="modal-preview-label">
                   <ImageIcon className="modal-preview-icon" />
-                  {uploadingImage ? "Uploading..." : "Preview"}
+                  {uploadingImage ? "Uploading..." : (needsCropping ? "Preview - Click Crop Button" : "Preview - Cropped")}
                 </div>
               </div>
             )}
@@ -491,7 +543,7 @@ const EventModal = ({
               type="button"
               onClick={handleClose}
               className="cancel-btn"
-              disabled={loading || uploadingImage || showCropModal}
+              disabled={loading || uploadingImage}
             >
               <CancelIcon className="btn-icon" />
               Cancel
@@ -499,7 +551,7 @@ const EventModal = ({
             <button
               type="submit"
               className="submit-btn"
-              disabled={loading || uploadingImage || showCropModal}
+              disabled={loading || uploadingImage}
             >
               {loading || uploadingImage ? (
                 <div className="spinner spinner-small"></div>
@@ -519,8 +571,8 @@ const EventModal = ({
         isOpen={showCropModal}
         onClose={handleCropCancel}
         onCropComplete={handleCropComplete}
-        imageFile={selectedImageFile}
-        aspectRatio={16/9} // Standard event image ratio
+        imageFile={originalImageFile}
+        aspectRatio={1.78} // 1.78:1 aspect ratio
       />
     </div>
   );
