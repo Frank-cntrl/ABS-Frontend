@@ -7,12 +7,13 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
   background: rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  padding: 80px 1rem 1rem 1rem; /* Added top padding to clear navbar */
+  padding: 80px 1rem 1rem 1rem;
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
@@ -23,7 +24,8 @@
   border-radius: 20px;
   width: 100%;
   max-width: 900px;
-  max-height: calc(100vh - 100px); /* Account for navbar and padding */
+  max-height: calc(100vh - 100px);
+  max-height: calc(100dvh - 100px); /* Use dynamic viewport height */
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(117, 56, 176, 0.4);
@@ -86,13 +88,15 @@
   background: #f8f9fa;
   flex: 1;
   min-height: 300px;
-  max-height: calc(100vh - 320px); /* Reserve more space for navbar and other elements */
+  max-height: calc(100vh - 320px);
+  max-height: calc(100dvh - 320px); /* Use dynamic viewport height */
   overflow: auto;
 }
 
 .crop-image {
   max-width: 100%;
-  max-height: calc(100vh - 380px); /* Further constrain image height */
+  max-height: calc(100vh - 380px);
+  max-height: calc(100dvh - 380px); /* Use dynamic viewport height */
   width: auto;
   height: auto;
   object-fit: contain;
@@ -236,23 +240,32 @@ body.crop-modal-open .modal-overlay {
   touch-action: none;
 }
 
-/* Mobile responsive */
+/* Mobile responsive with better viewport handling */
 @media (max-width: 768px) {
   .crop-modal-overlay {
-    padding: 60px 0.5rem 0.5rem 0.5rem; /* Less top padding on mobile */
+    padding: 20px 0.5rem 0.5rem 0.5rem; /* Reduced top padding for mobile */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport for mobile */
+    min-height: -webkit-fill-available; /* iOS Safari fallback */
   }
 
   .crop-modal-content {
     max-width: 100%;
-    max-height: calc(100vh - 80px); /* Adjust for mobile navbar */
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px); /* Use available viewport */
+    min-height: auto;
   }
 
   .crop-container {
-    max-height: calc(100vh - 260px); /* Adjust for mobile */
+    max-height: calc(100vh - 200px);
+    max-height: calc(100dvh - 200px);
+    padding: 0.75rem 1rem;
+    min-height: 200px;
   }
 
   .crop-image {
-    max-height: calc(100vh - 320px); /* Constrain for mobile */
+    max-height: calc(100vh - 260px);
+    max-height: calc(100dvh - 260px);
   }
 
   .crop-modal-header {
@@ -261,11 +274,6 @@ body.crop-modal-open .modal-overlay {
 
   .crop-modal-header h2 {
     font-size: 1.1rem;
-  }
-
-  .crop-container {
-    padding: 0.75rem 1rem;
-    min-height: 200px;
   }
 
   .crop-instructions {
@@ -295,19 +303,27 @@ body.crop-modal-open .modal-overlay {
 
 @media (max-width: 480px) {
   .crop-modal-overlay {
-    padding: 40px 0.25rem 0.25rem 0.25rem; /* Even less top padding on small screens */
+    padding: 10px 0.25rem 0.25rem 0.25rem; /* Minimal padding for small screens */
+    height: 100vh;
+    height: 100dvh;
+    min-height: -webkit-fill-available; /* iOS Safari specific */
   }
 
   .crop-modal-content {
-    max-height: calc(100vh - 60px); /* Maximize space on small screens */
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
   }
 
   .crop-container {
-    max-height: calc(100vh - 220px); /* Adjust for small screens */
+    max-height: calc(100vh - 180px);
+    max-height: calc(100dvh - 180px);
+    padding: 0.5rem;
+    min-height: 150px;
   }
 
   .crop-image {
-    max-height: calc(100vh - 280px); /* Further constrain for small screens */
+    max-height: calc(100vh - 220px);
+    max-height: calc(100dvh - 220px);
   }
 
   .crop-modal-header {
@@ -316,11 +332,6 @@ body.crop-modal-open .modal-overlay {
 
   .crop-modal-header h2 {
     font-size: 1rem;
-  }
-
-  .crop-container {
-    padding: 0.5rem;
-    min-height: 150px;
   }
 
   .crop-instructions {
@@ -337,5 +348,20 @@ body.crop-modal-open .modal-overlay {
     width: 28px;
     height: 28px;
     border-width: 5px;
+  }
+}
+
+/* Fallback for browsers that don't support dvh */
+@supports not (height: 100dvh) {
+  .crop-modal-overlay {
+    height: 100vh;
+    min-height: 100vh;
+  }
+
+  @media (max-width: 768px) {
+    .crop-modal-overlay {
+      height: 100vh;
+      min-height: -webkit-fill-available;
+    }
   }
 }
