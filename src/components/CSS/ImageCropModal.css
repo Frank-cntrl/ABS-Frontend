@@ -10,13 +10,12 @@
   height: 100dvh; /* Dynamic viewport height for mobile browsers */
   background: rgba(0, 0, 0, 0.9);
   display: flex;
-  align-items: center;
+  align-items: center; /* Center vertically */
   justify-content: center;
-  z-index: 9999;
-  padding: 80px 1rem 1rem 1rem;
+  z-index: 99999;
+  padding: 80px 1rem 1rem 1rem; /* Top padding for navbar clearance */
   box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden; /* Prevent scrolling */
 }
 
 .crop-modal-content {
@@ -24,15 +23,15 @@
   border-radius: 20px;
   width: 100%;
   max-width: 900px;
-  max-height: calc(100vh - 100px);
-  max-height: calc(100dvh - 100px); /* Use dynamic viewport height */
+  height: calc(100vh - 100px); /* Fixed height based on available viewport */
+  height: calc(100dvh - 100px);
+  max-height: 700px; /* Maximum height to ensure it fits on smaller screens */
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(117, 56, 176, 0.4);
   animation: cropModalSlideIn 0.3s ease;
   position: relative;
-  overflow: hidden;
-  margin: auto;
+  overflow: hidden; /* Prevent any overflow */
 }
 
 .crop-modal-header {
@@ -43,7 +42,8 @@
   border-bottom: 2px solid #f0f0f0;
   background: white;
   border-radius: 20px 20px 0 0;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Don't allow shrinking */
+  z-index: 10;
 }
 
 .crop-modal-header h2 {
@@ -81,22 +81,19 @@
 }
 
 .crop-container {
-  padding: 1rem 2rem;
+  padding: 1rem 2rem; /* Reduced padding */
   display: flex;
   justify-content: center;
   align-items: center;
   background: #f8f9fa;
-  flex: 1;
-  min-height: 300px;
-  max-height: calc(100vh - 320px);
-  max-height: calc(100dvh - 320px); /* Use dynamic viewport height */
-  overflow: auto;
+  flex: 1; /* Take up all available space between header and footer */
+  overflow: hidden; /* Prevent overflow */
+  min-height: 0; /* Allow flexbox to shrink this */
 }
 
 .crop-image {
   max-width: 100%;
-  max-height: calc(100vh - 380px);
-  max-height: calc(100dvh - 380px); /* Use dynamic viewport height */
+  max-height: 100%; /* Constrain to container height */
   width: auto;
   height: auto;
   object-fit: contain;
@@ -106,14 +103,14 @@
   -moz-user-select: none;
 }
 
-/* React-image-crop styles with correct aspect ratio enforcement */
+/* React-image-crop styles with height constraints */
 .ReactCrop {
   display: inline-block;
   position: relative;
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: 100%;
+  max-height: 100%; /* Constrain to container height */
 }
 
 .ReactCrop__crop-selection {
@@ -152,13 +149,14 @@
 }
 
 .crop-instructions {
-  padding: 0.75rem 2rem;
+  padding: 1rem 2rem;
   text-align: center;
   color: #666666;
   font-size: 0.9rem;
   font-style: italic;
   background: #f8f9fa;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Don't allow shrinking */
+  border-top: 1px solid #e9ecef;
 }
 
 .crop-modal-actions {
@@ -169,7 +167,8 @@
   border-top: 2px solid #f0f0f0;
   background: white;
   border-radius: 0 0 20px 20px;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Don't allow shrinking */
+  z-index: 10;
 }
 
 .crop-cancel-btn,
@@ -240,10 +239,45 @@ body.crop-modal-open .modal-overlay {
   touch-action: none;
 }
 
+/* Desktop specific improvements */
+@media (min-width: 769px) {
+  .crop-modal-overlay {
+    padding: 100px 2rem 20px 2rem; /* Balanced padding */
+  }
+
+  .crop-modal-content {
+    height: calc(100vh - 140px); /* Account for larger padding */
+    height: calc(100dvh - 140px);
+    max-height: 800px; /* Larger max height on desktop */
+  }
+
+  .crop-container {
+    padding: 1.5rem 3rem; /* Slightly more padding on desktop */
+  }
+
+  .crop-modal-header {
+    padding: 2rem 3rem;
+  }
+
+  .crop-modal-actions {
+    padding: 2rem 3rem;
+  }
+
+  .crop-instructions {
+    padding: 1.5rem 3rem;
+  }
+
+  /* Larger drag handles for desktop precision */
+  .ReactCrop__drag-handle {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 /* Mobile responsive with better viewport handling */
 @media (max-width: 768px) {
   .crop-modal-overlay {
-    padding: 20px 0.5rem 0.5rem 0.5rem; /* Reduced top padding for mobile */
+    padding: 80px 0.5rem 10px 0.5rem;
     height: 100vh;
     height: 100dvh; /* Dynamic viewport for mobile */
     min-height: -webkit-fill-available; /* iOS Safari fallback */
@@ -251,21 +285,13 @@ body.crop-modal-open .modal-overlay {
 
   .crop-modal-content {
     max-width: 100%;
-    max-height: calc(100vh - 40px);
-    max-height: calc(100dvh - 40px); /* Use available viewport */
-    min-height: auto;
+    height: calc(100vh - 100px);
+    height: calc(100dvh - 100px);
+    max-height: 600px; /* Smaller max height on mobile */
   }
 
   .crop-container {
-    max-height: calc(100vh - 200px);
-    max-height: calc(100dvh - 200px);
-    padding: 0.75rem 1rem;
-    min-height: 200px;
-  }
-
-  .crop-image {
-    max-height: calc(100vh - 260px);
-    max-height: calc(100dvh - 260px);
+    padding: 1rem; /* Smaller padding on mobile */
   }
 
   .crop-modal-header {
@@ -277,7 +303,7 @@ body.crop-modal-open .modal-overlay {
   }
 
   .crop-instructions {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     font-size: 0.85rem;
   }
 
@@ -303,27 +329,20 @@ body.crop-modal-open .modal-overlay {
 
 @media (max-width: 480px) {
   .crop-modal-overlay {
-    padding: 10px 0.25rem 0.25rem 0.25rem; /* Minimal padding for small screens */
+    padding: 60px 0.25rem 10px 0.25rem;
     height: 100vh;
     height: 100dvh;
     min-height: -webkit-fill-available; /* iOS Safari specific */
   }
 
   .crop-modal-content {
-    max-height: calc(100vh - 20px);
-    max-height: calc(100dvh - 20px);
+    height: calc(100vh - 80px);
+    height: calc(100dvh - 80px);
+    max-height: 500px; /* Even smaller on tiny screens */
   }
 
   .crop-container {
-    max-height: calc(100vh - 180px);
-    max-height: calc(100dvh - 180px);
-    padding: 0.5rem;
-    min-height: 150px;
-  }
-
-  .crop-image {
-    max-height: calc(100vh - 220px);
-    max-height: calc(100dvh - 220px);
+    padding: 0.75rem; /* Minimal padding */
   }
 
   .crop-modal-header {
@@ -358,10 +377,66 @@ body.crop-modal-open .modal-overlay {
     min-height: 100vh;
   }
 
+  .crop-modal-content {
+    height: calc(100vh - 100px);
+  }
+
   @media (max-width: 768px) {
     .crop-modal-overlay {
       height: 100vh;
       min-height: -webkit-fill-available;
     }
+
+    .crop-modal-content {
+      height: calc(100vh - 100px);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .crop-modal-content {
+      height: calc(100vh - 80px);
+    }
+  }
+}
+
+/* Focus styles for accessibility */
+.crop-modal-close:focus,
+.crop-cancel-btn:focus,
+.crop-apply-btn:focus {
+  outline: 3px solid #be9dde;
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling disabled since we have fixed height */
+@media (prefers-reduced-motion: no-preference) {
+  .crop-modal-content {
+    scroll-behavior: auto; /* Disable smooth scrolling since no scroll */
+  }
+}
+
+/* High DPI display adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .ReactCrop__drag-handle {
+    border-width: 2px; /* Thinner borders on high DPI */
+  }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .crop-modal-content {
+    max-height: 90vh; /* Use more of the viewport in landscape */
+  }
+
+  .crop-container {
+    padding: 0.5rem 1rem; /* Reduce vertical padding in landscape */
+  }
+
+  .crop-modal-header,
+  .crop-modal-actions {
+    padding: 1rem 1.5rem; /* Reduce vertical padding */
+  }
+
+  .crop-instructions {
+    padding: 0.5rem 1rem;
   }
 }
