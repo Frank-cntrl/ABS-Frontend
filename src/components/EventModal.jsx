@@ -110,7 +110,7 @@ const EventModal = ({
     }
   };
 
-  // Handle file selection - opens crop modal
+  // Handle file selection - simplified
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -132,10 +132,6 @@ const EventModal = ({
         return;
       }
 
-      // Store the file and open crop modal
-      setSelectedImageFile(file);
-      setShowCropModal(true);
-
       // Clear image errors
       if (errors.image) {
         setErrors((prev) => ({
@@ -143,6 +139,10 @@ const EventModal = ({
           image: "",
         }));
       }
+
+      // Just open the crop modal - it will handle positioning itself
+      setSelectedImageFile(file);
+      setShowCropModal(true);
     }
   };
 

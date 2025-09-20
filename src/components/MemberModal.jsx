@@ -102,7 +102,7 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     }
   };
 
-  // Handle file selection - opens crop modal
+  // Handle file selection - simplified
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -124,10 +124,6 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
         return;
       }
 
-      // Store the file and open crop modal
-      setSelectedImageFile(file);
-      setShowCropModal(true);
-
       // Clear picture errors
       if (errors.picture) {
         setErrors(prev => ({
@@ -135,6 +131,10 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
           picture: ''
         }));
       }
+
+      // Just open the crop modal - it will handle positioning itself
+      setSelectedImageFile(file);
+      setShowCropModal(true);
     }
   };
 
