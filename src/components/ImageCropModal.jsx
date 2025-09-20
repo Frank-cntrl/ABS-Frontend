@@ -14,59 +14,72 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
   const [completedCrop, setCompletedCrop] = useState(null);
   const [imageSrc, setImageSrc] = useState('');
   const imgRef = useRef(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
 
-  // Handle body scroll when modal opens/closes - ENHANCED
+  // Handle underlying modal scroll prevention and reset when crop modal opens
   useEffect(() => {
     if (isOpen) {
-      // Store current scroll position
-      const currentScrollY = window.scrollY;
-      setScrollPosition(currentScrollY);
+      // Find and handle underlying modals
+      const modalContents = document.querySelectorAll('.modal-content');
+      const modalOverlays = document.querySelectorAll('.modal-overlay');
       
-      // Remove any existing modal-open classes
-      document.body.classList.remove('modal-open');
-      document.documentElement.classList.remove('modal-open');
+      // Store original overflow styles AND scroll positions
+      const originalStyles = new Map();
+      const originalScrollPositions = new Map();
       
-      // Add crop modal specific classes
+      modalContents.forEach((modal, index) => {
+        // Store original styles
+        originalStyles.set(`modal-content-${index}`, modal.style.overflow);
+        
+        // Store original scroll position
+        originalScrollPositions.set(`modal-content-${index}`, modal.scrollTop);
+        
+        // Reset scroll to top and disable scrolling
+        modal.scrollTop = 0;
+        modal.style.overflow = 'hidden';
+        modal.style.touchAction = 'none';
+      });
+      
+      modalOverlays.forEach((overlay, index) => {
+        originalStyles.set(`modal-overlay-${index}`, overlay.style.overflow);
+        originalScrollPositions.set(`modal-overlay-${index}`, overlay.scrollTop);
+        
+        // Reset scroll and disable
+        overlay.scrollTop = 0;
+        overlay.style.overflow = 'hidden';
+        overlay.style.touchAction = 'none';
+      });
+      
+      // Add crop modal class
       document.body.classList.add('crop-modal-open');
-      document.documentElement.classList.add('crop-modal-open');
-      
-      // More aggressive scroll prevention
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${currentScrollY}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-      
-      // Prevent scroll on html element too
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.height = '100%';
       
       return () => {
-        // Restore everything
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        document.body.style.width = '';
-        document.body.style.height = '';
-        document.body.style.overflow = '';
-        document.body.style.touchAction = '';
+        // Restore underlying modal styles and scroll positions
+        modalContents.forEach((modal, index) => {
+          const originalOverflow = originalStyles.get(`modal-content-${index}`);
+          const originalScrollTop = originalScrollPositions.get(`modal-content-${index}`);
+          
+          modal.style.overflow = originalOverflow || '';
+          modal.style.touchAction = '';
+          
+          // Restore scroll position after a small delay to ensure proper restoration
+          setTimeout(() => {
+            modal.scrollTop = originalScrollTop || 0;
+          }, 100);
+        });
         
-        document.documentElement.style.overflow = '';
-        document.documentElement.style.height = '';
+        modalOverlays.forEach((overlay, index) => {
+          const originalOverflow = originalStyles.get(`modal-overlay-${index}`);
+          const originalScrollTop = originalScrollPositions.get(`modal-overlay-${index}`);
+          
+          overlay.style.overflow = originalOverflow || '';
+          overlay.style.touchAction = '';
+          
+          setTimeout(() => {
+            overlay.scrollTop = originalScrollTop || 0;
+          }, 100);
+        });
         
         document.body.classList.remove('crop-modal-open');
-        document.documentElement.classList.remove('crop-modal-open');
-        
-        // Restore original modal-open class if needed
-        document.body.classList.add('modal-open');
-        
-        // Restore scroll position
-        window.scrollTo(0, currentScrollY);
       };
     }
   }, [isOpen]);
@@ -83,36 +96,67 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
   }, [imageFile, isOpen]);
 
   const onImageLoad = useCallback((e) => {
-    const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
+    const { width: displayWidth, height: displayHeight } = e.currentTarget;
     imgRef.current = e.currentTarget;
 
-    // Calculate initial crop with CORRECT aspect ratio
+    // Use the DISPLAYED dimensions, not natural dimensions
     let cropWidth, cropHeight;
 
-    if (width / height > aspectRatio) {
+    if (displayWidth / displayHeight > aspectRatio) {
       // Image is wider than desired aspect ratio
-      cropHeight = height * 0.8;
+      cropHeight = displayHeight * 0.7; // Slightly smaller for better visibility
       cropWidth = cropHeight * aspectRatio;
     } else {
       // Image is taller than desired aspect ratio
-      cropWidth = width * 0.8;
+      cropWidth = displayWidth * 0.7; // Slightly smaller for better visibility
       cropHeight = cropWidth / aspectRatio;
     }
 
-    // Center the crop
-    const x = (width - cropWidth) / 2;
-    const y = (height - cropHeight) / 2;
+    // Center the crop on the DISPLAYED image
+    const x = (displayWidth - cropWidth) / 2;
+    const y = (displayHeight - cropHeight) / 2;
 
     const initialCrop = {
       unit: 'px',
-      width: Math.max(cropWidth, 100),
-      height: Math.max(cropHeight, 100 / aspectRatio),
+      width: Math.max(cropWidth, 50), // Ensure minimum visible size
+      height: Math.max(cropHeight, 50 / aspectRatio),
       x: Math.max(x, 0),
       y: Math.max(y, 0),
     };
 
     setCrop(initialCrop);
     setCompletedCrop(initialCrop);
+  }, [aspectRatio]);
+
+  // Enhanced crop change handler with bounds checking
+  const handleCropChange = useCallback((newCrop, percentageCrop) => {
+    if (!imgRef.current) return;
+
+    const { width: imgWidth, height: imgHeight } = imgRef.current;
+    
+    // Ensure crop stays within image bounds
+    const boundedCrop = {
+      ...newCrop,
+      x: Math.max(0, Math.min(newCrop.x, imgWidth - newCrop.width)),
+      y: Math.max(0, Math.min(newCrop.y, imgHeight - newCrop.height)),
+    };
+
+    // Ensure crop doesn't go beyond image boundaries
+    if (boundedCrop.x + boundedCrop.width > imgWidth) {
+      boundedCrop.width = imgWidth - boundedCrop.x;
+    }
+    if (boundedCrop.y + boundedCrop.height > imgHeight) {
+      boundedCrop.height = imgHeight - boundedCrop.y;
+    }
+
+    // Maintain aspect ratio if width/height changed
+    if (aspectRatio && boundedCrop.width !== newCrop.width) {
+      boundedCrop.height = boundedCrop.width / aspectRatio;
+    } else if (aspectRatio && boundedCrop.height !== newCrop.height) {
+      boundedCrop.width = boundedCrop.height * aspectRatio;
+    }
+
+    setCrop(boundedCrop);
   }, [aspectRatio]);
 
   const getCroppedImg = useCallback(async (image, crop) => {
@@ -202,24 +246,15 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
     onClose();
   };
 
-  // Prevent any scrolling or interaction with background
+  // Allow scrolling within the crop modal but prevent background interaction
   const handleModalClick = (e) => {
     e.stopPropagation();
-    e.preventDefault();
   };
 
   const handleOverlayClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
     if (e.target === e.currentTarget) {
       handleClose();
     }
-  };
-
-  const preventScroll = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
   };
 
   if (!isOpen || !imageSrc) return null;
@@ -228,19 +263,6 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
     <div 
       className="crop-modal-overlay" 
       onClick={handleOverlayClick}
-      onWheel={preventScroll}
-      onTouchMove={preventScroll}
-      onScroll={preventScroll}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999, // Much higher than regular modals
-        overflow: 'hidden',
-        touchAction: 'none'
-      }}
     >
       <div className="crop-modal-content" onClick={handleModalClick}>
         <div className="crop-modal-header">
@@ -256,22 +278,20 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
         <div className="crop-container">
           <ReactCrop
             crop={crop}
-            onChange={(newCrop, percentageCrop) => {
-              setCrop(newCrop);
-            }}
+            onChange={handleCropChange}
             onComplete={(c, percentageCrop) => {
               if (c.width && c.height) {
                 setCompletedCrop(c);
               }
             }}
-            aspect={aspectRatio} // This ensures correct aspect ratio
-            minWidth={50}
-            minHeight={50 / aspectRatio}
-            maxWidth={imgRef.current?.naturalWidth || undefined}
-            maxHeight={imgRef.current?.naturalHeight || undefined}
+            aspect={aspectRatio}
+            minWidth={30}
+            minHeight={30 / aspectRatio}
             keepSelection={true}
             ruleOfThirds={true}
             circularCrop={false}
+            // Add bounds to prevent dragging outside image
+            style={{ maxWidth: '100%', maxHeight: '100%' }}
           >
             <img
               ref={imgRef}
@@ -279,13 +299,6 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
               alt="Crop preview"
               onLoad={onImageLoad}
               className="crop-image"
-              style={{ 
-                maxHeight: window.innerWidth <= 768 ? '50vh' : '60vh', 
-                maxWidth: '100%',
-                height: 'auto',
-                width: 'auto',
-                display: 'block'
-              }}
               onDragStart={(e) => e.preventDefault()}
             />
           </ReactCrop>
