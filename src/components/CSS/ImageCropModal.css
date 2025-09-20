@@ -228,6 +228,7 @@ html.crop-modal-open {
   .crop-modal-overlay {
     padding-bottom: 150px;
     min-height: 1200px;
+    padding-top: 5rem;
   }
 
 
@@ -269,8 +270,9 @@ html.crop-modal-open {
 
 @media (max-width: 480px) {
   .crop-modal-overlay {
-    padding-bottom: 500px;
+    padding-bottom: 450px;
     min-height: 1160px;
+    padding-top: 5rem;
   }
 
   .crop-modal-header {
