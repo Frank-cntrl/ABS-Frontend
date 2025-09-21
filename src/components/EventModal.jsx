@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
 import "./CSS/EventStyles.css";
-import ImageCropModal from './ImageCropModal';
+import ImageCropModal from "./ImageCropModal";
 
 // MUI Icons
 import CloseIcon from "@mui/icons-material/Close";
@@ -159,10 +159,46 @@ const EventModal = ({
     }
   };
 
-  // Open crop modal with the original file
+  // Open crop modal with scroll to top
   const handleCropImage = () => {
     if (originalImageFile) {
-      setShowCropModal(true);
+      // Multiple approaches to ensure scrolling works
+      const modalContent = document.querySelector(".modal-content");
+      const modalOverlay = document.querySelector(".modal-overlay");
+
+      // Method 1: Direct scrollTop property (most reliable)
+      if (modalContent) {
+        modalContent.scrollTop = 0;
+      }
+
+      if (modalOverlay) {
+        modalOverlay.scrollTop = 0;
+      }
+
+      // Method 2: Window scroll
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      // Method 3: Force all scrollable elements to top
+      const scrollableElements = document.querySelectorAll(
+        ".modal-content, .modal-overlay, .modal-form"
+      );
+      scrollableElements.forEach((element) => {
+        element.scrollTop = 0;
+      });
+
+      // Method 4: Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        if (modalContent) {
+          modalContent.scrollTop = 0;
+        }
+
+        // Small delay then open crop modal
+        setTimeout(() => {
+          setShowCropModal(true);
+        }, 50); // Reduced delay
+      });
     }
   };
 
@@ -170,14 +206,14 @@ const EventModal = ({
   const handleCropComplete = (croppedFile) => {
     setImageFile(croppedFile);
     setNeedsCropping(false); // Mark as cropped
-    
+
     // Create preview from cropped file
     const reader = new FileReader();
     reader.onload = (e) => {
       setImagePreview(e.target.result);
     };
     reader.readAsDataURL(croppedFile);
-    
+
     setShowCropModal(false);
   };
 
@@ -227,16 +263,57 @@ const EventModal = ({
     }
   };
 
+  // ...existing code...
+
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.title.trim()) newErrors.title = "Title is required";
-    if (!formData.description.trim())
+
+    // Title validation - match backend requirements
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required";
+    } else if (formData.title.trim().length < 3) {
+      newErrors.title = "Title must be at least 3 characters long";
+    } else if (formData.title.trim().length > 255) {
+      newErrors.title = "Title must be less than 255 characters";
+    }
+
+    // Description validation
+    if (!formData.description.trim()) {
       newErrors.description = "Description is required";
-    if (!formData.location.trim()) newErrors.location = "Location is required";
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description = "Description must be at least 10 characters long";
+    }
+
+    // Location validation
+    if (!formData.location.trim()) {
+      newErrors.location = "Location is required";
+    } else if (formData.location.trim().length < 3) {
+      newErrors.location = "Location must be at least 3 characters long";
+    }
+
+    // Date validation (optional but if provided, should be in future)
+    if (formData.date) {
+      const selectedDate = new Date(formData.date);
+      const now = new Date();
+      if (selectedDate < now) {
+        newErrors.date = "Event date should be in the future";
+      }
+    }
+
+    // RSVP Link validation (optional but if provided, should be valid URL)
+    if (formData.rsvpLink && formData.rsvpLink.trim()) {
+      try {
+        new URL(formData.rsvpLink.trim());
+      } catch {
+        newErrors.rsvpLink = "Please enter a valid URL";
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  // ...existing code...
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -359,10 +436,18 @@ const EventModal = ({
               value={formData.title}
               onChange={handleInputChange}
               className={errors.title ? "error" : ""}
-              placeholder="e.g., Welcome Back Mixer"
+              placeholder="e.g., Welcome Back Mixer (minimum 3 characters)"
               disabled={loading || uploadingImage}
+              minLength={3}
+              maxLength={255}
             />
             {errors.title && <span className="error">{errors.title}</span>}
+            <small className="input-hint">
+              {formData.title.length}/255 characters{" "}
+              {formData.title.length < 3 && formData.title.length > 0
+                ? "(minimum 3 required)"
+                : ""}
+            </small>
           </div>
 
           <div className="form-group">
@@ -439,7 +524,9 @@ const EventModal = ({
                     ? "Change image"
                     : "Choose image file"}
                 </span>
-                <small>Max 10MB - JPG, PNG, GIF - 1.78:1 aspect ratio recommended</small>
+                <small>
+                  Max 10MB - JPG, PNG, GIF - 1.78:1 aspect ratio recommended
+                </small>
               </label>
               <input
                 type="file"
@@ -476,7 +563,9 @@ const EventModal = ({
                   <CropIcon className="btn-icon" />
                   Crop Image to 1.78:1 Ratio
                 </button>
-                <small className="crop-hint">Click to crop your image to the optimal 1.78:1 aspect ratio</small>
+                <small className="crop-hint">
+                  Click to crop your image to the optimal 1.78:1 aspect ratio
+                </small>
               </div>
             )}
 
@@ -502,7 +591,11 @@ const EventModal = ({
                 <img src={imagePreview} alt="Preview" />
                 <div className="modal-preview-label">
                   <ImageIcon className="modal-preview-icon" />
-                  {uploadingImage ? "Uploading..." : (needsCropping ? "Preview - Click Crop Button" : "Preview - Cropped")}
+                  {uploadingImage
+                    ? "Uploading..."
+                    : needsCropping
+                    ? "Preview - Click Crop Button"
+                    : "Preview - Cropped"}
                 </div>
               </div>
             )}

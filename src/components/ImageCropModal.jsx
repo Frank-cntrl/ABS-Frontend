@@ -13,7 +13,9 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState(null);
   const [imageSrc, setImageSrc] = useState('');
+  const [imageLoaded, setImageLoaded] = useState(false);
   const imgRef = useRef(null);
+  const containerRef = useRef(null);
 
   // Force crop modal to appear at top of viewport
   useEffect(() => {
@@ -88,29 +90,70 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
       const reader = new FileReader();
       reader.onload = (e) => {
         setImageSrc(e.target.result);
+        setImageLoaded(false);
       };
       reader.readAsDataURL(imageFile);
     }
   }, [imageFile, isOpen]);
 
-  const onImageLoad = useCallback((e) => {
-    const { width: displayWidth, height: displayHeight } = e.currentTarget;
-    imgRef.current = e.currentTarget;
+  // Calculate the optimal size for the image to fit within the container
+  const calculateImageSize = useCallback((naturalWidth, naturalHeight, containerWidth, containerHeight) => {
+    // Add some padding to ensure the image doesn't touch the edges
+    const padding = 40;
+    const maxWidth = containerWidth - padding;
+    const maxHeight = containerHeight - padding;
+    
+    // Calculate the scale needed to fit the image within the container
+    const scaleWidth = maxWidth / naturalWidth;
+    const scaleHeight = maxHeight / naturalHeight;
+    const scale = Math.min(scaleWidth, scaleHeight, 1); // Don't scale up, only down
+    
+    return {
+      width: naturalWidth * scale,
+      height: naturalHeight * scale,
+      scale
+    };
+  }, []);
 
-    // Use the DISPLAYED dimensions, not natural dimensions
+  const onImageLoad = useCallback((e) => {
+    const img = e.currentTarget;
+    const { naturalWidth, naturalHeight } = img;
+    imgRef.current = img;
+    
+    // Get container dimensions
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    const containerWidth = containerRect.width;
+    const containerHeight = containerRect.height;
+    
+    // Calculate optimal image size
+    const { width: displayWidth, height: displayHeight } = calculateImageSize(
+      naturalWidth, 
+      naturalHeight, 
+      containerWidth, 
+      containerHeight
+    );
+    
+    // Set the image size directly
+    img.style.width = `${displayWidth}px`;
+    img.style.height = `${displayHeight}px`;
+    
+    // Calculate crop area based on the displayed size
     let cropWidth, cropHeight;
 
     if (displayWidth / displayHeight > aspectRatio) {
       // Image is wider than desired aspect ratio
-      cropHeight = displayHeight * 0.7; // Slightly smaller for better visibility
+      cropHeight = displayHeight * 0.8; // Use 80% of displayed height
       cropWidth = cropHeight * aspectRatio;
     } else {
       // Image is taller than desired aspect ratio
-      cropWidth = displayWidth * 0.7; // Slightly smaller for better visibility
+      cropWidth = displayWidth * 0.8; // Use 80% of displayed width
       cropHeight = cropWidth / aspectRatio;
     }
 
-    // Center the crop on the DISPLAYED image
+    // Center the crop on the displayed image
     const x = (displayWidth - cropWidth) / 2;
     const y = (displayHeight - cropHeight) / 2;
 
@@ -124,13 +167,14 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
 
     setCrop(initialCrop);
     setCompletedCrop(initialCrop);
-  }, [aspectRatio]);
+    setImageLoaded(true);
+  }, [aspectRatio, calculateImageSize]);
 
   // Enhanced crop change handler with bounds checking
   const handleCropChange = useCallback((newCrop, percentageCrop) => {
     if (!imgRef.current) return;
 
-    const { width: imgWidth, height: imgHeight } = imgRef.current;
+    const { width: imgWidth, height: imgHeight } = imgRef.current.getBoundingClientRect();
     
     // Ensure crop stays within image bounds
     const boundedCrop = {
@@ -169,24 +213,26 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
       return null;
     }
 
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
+    // Calculate the scale between displayed size and natural size
+    const displayedRect = image.getBoundingClientRect();
+    const scaleX = image.naturalWidth / displayedRect.width;
+    const scaleY = image.naturalHeight / displayedRect.height;
     const pixelRatio = window.devicePixelRatio || 1;
 
-    // Set canvas size to the crop size
+    // Set canvas size to the crop size in natural dimensions
     canvas.width = Math.floor(crop.width * scaleX * pixelRatio);
     canvas.height = Math.floor(crop.height * scaleY * pixelRatio);
 
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     ctx.imageSmoothingQuality = 'high';
 
-    // Draw the cropped image
+    // Draw the cropped image using natural coordinates
     ctx.drawImage(
       image,
-      crop.x * scaleX,
-      crop.y * scaleY,
-      crop.width * scaleX,
-      crop.height * scaleY,
+      crop.x * scaleX, // x position in natural coordinates
+      crop.y * scaleY, // y position in natural coordinates
+      crop.width * scaleX, // width in natural coordinates
+      crop.height * scaleY, // height in natural coordinates
       0,
       0,
       crop.width * scaleX,
@@ -241,6 +287,7 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
     setImageSrc('');
     setCrop(undefined);
     setCompletedCrop(null);
+    setImageLoaded(false);
     onClose();
   };
 
@@ -261,33 +308,10 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
     <div 
       className="crop-modal-overlay" 
       onClick={handleOverlayClick}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 99999, // Higher than other modals
-        display: 'flex',
-        alignItems: 'flex-start', // Changed from center to flex-start
-        justifyContent: 'center',
-        paddingTop: '80px', // Increased from 20px to 80px to account for navbar
-        boxSizing: 'border-box'
-      }}
     >
       <div 
         className="crop-modal-content" 
         onClick={handleModalClick}
-        style={{
-          position: 'relative',
-          maxHeight: 'calc(100vh - 100px)', // Adjusted to account for larger top padding
-          width: '90vw',
-          maxWidth: '900px',
-          margin: '0 auto',
-          overflowY: 'auto'
-        }}
       >
         <div className="crop-modal-header">
           <h2>
@@ -299,7 +323,14 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
           </button>
         </div>
 
-        <div className="crop-container">
+        <div className="crop-container" ref={containerRef}>
+          {!imageLoaded && (
+            <div className="crop-loading">
+              <div className="spinner"></div>
+              <span>Loading image...</span>
+            </div>
+          )}
+          
           <ReactCrop
             crop={crop}
             onChange={handleCropChange}
@@ -314,7 +345,10 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
             keepSelection={true}
             ruleOfThirds={true}
             circularCrop={false}
-            style={{ maxWidth: '100%', maxHeight: '100%' }}
+            style={{ 
+              opacity: imageLoaded ? 1 : 0,
+              transition: 'opacity 0.3s ease'
+            }}
           >
             <img
               ref={imgRef}
@@ -323,6 +357,13 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
               onLoad={onImageLoad}
               className="crop-image"
               onDragStart={(e) => e.preventDefault()}
+              style={{
+                maxWidth: 'none', // Override CSS max-width
+                maxHeight: 'none', // Override CSS max-height
+                width: 'auto', // Will be set by onLoad
+                height: 'auto', // Will be set by onLoad
+                display: 'block'
+              }}
             />
           </ReactCrop>
         </div>
@@ -330,7 +371,7 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
         <div className="crop-instructions">
           <p>
             Drag the corners to resize or drag the center to move the crop area. 
-            {aspectRatio === 1 ? ' Creating square crop for profile photo.' : ` Creating ${Math.round(aspectRatio * 100) / 100}:1 ratio for event image.`}
+            {aspectRatio === 1 ? ' Creating square crop for profile photo.' : ` Creating ${Math.round(aspectRatio * 100) / 100}:1 ratio for image.`}
           </p>
         </div>
 
@@ -345,7 +386,7 @@ const ImageCropModal = ({ isOpen, onClose, onCropComplete, imageFile, aspectRati
           <button 
             className="crop-apply-btn" 
             onClick={handleCropComplete}
-            disabled={!completedCrop}
+            disabled={!completedCrop || !imageLoaded}
           >
             <CheckIcon className="btn-icon" />
             Apply Crop

@@ -151,12 +151,46 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     }
   };
 
-  // Open crop modal with the original file
-  const handleCropImage = () => {
-    if (originalImageFile) {
-      setShowCropModal(true);
+  // Open crop modal with scroll to top
+const handleCropImage = () => {
+  if (originalImageFile) {
+    // Multiple approaches to ensure scrolling works
+    const modalContent = document.querySelector('.modal-content');
+    const modalOverlay = document.querySelector('.modal-overlay');
+    
+    // Method 1: Direct scrollTop property (most reliable)
+    if (modalContent) {
+      modalContent.scrollTop = 0;
     }
-  };
+    
+    if (modalOverlay) {
+      modalOverlay.scrollTop = 0;
+    }
+    
+    // Method 2: Window scroll
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // Method 3: Force all scrollable elements to top
+    const scrollableElements = document.querySelectorAll('.modal-content, .modal-overlay, .modal-form');
+    scrollableElements.forEach(element => {
+      element.scrollTop = 0;
+    });
+    
+    // Method 4: Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      if (modalContent) {
+        modalContent.scrollTop = 0;
+      }
+      
+      // Small delay then open crop modal
+      setTimeout(() => {
+        setShowCropModal(true);
+      }, 50); // Reduced delay
+    });
+  }
+};
 
   // Handle crop completion
   const handleCropComplete = (croppedFile) => {
@@ -243,28 +277,51 @@ const MemberModal = ({ isOpen, onClose, onSubmit, editingMember, loading }) => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+// ...existing code...
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-    if (!formData.year.trim()) {
-      newErrors.year = 'Year is required';
-    }
-    if (!formData.major.trim()) {
-      newErrors.major = 'Major is required';
-    }
-    if (!formData.role.trim()) {
-      newErrors.role = 'Role is required';
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
-    }
+const validateForm = () => {
+  const newErrors = {};
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  // Name validation - match backend requirements
+  if (!formData.name.trim()) {
+    newErrors.name = 'Name is required';
+  } else if (formData.name.trim().length < 2) {
+    newErrors.name = 'Name must be at least 2 characters long';
+  } else if (formData.name.trim().length > 100) {
+    newErrors.name = 'Name must be less than 100 characters';
+  }
+
+  // Year validation
+  if (!formData.year.trim()) {
+    newErrors.year = 'Year is required';
+  }
+
+  // Major validation
+  if (!formData.major.trim()) {
+    newErrors.major = 'Major is required';
+  } else if (formData.major.trim().length < 2) {
+    newErrors.major = 'Major must be at least 2 characters long';
+  }
+
+  // Role validation
+  if (!formData.role.trim()) {
+    newErrors.role = 'Role is required';
+  } else if (formData.role.trim().length < 2) {
+    newErrors.role = 'Role must be at least 2 characters long';
+  }
+
+  // Description validation
+  if (!formData.description.trim()) {
+    newErrors.description = 'Description is required';
+  } else if (formData.description.trim().length < 10) {
+    newErrors.description = 'Description must be at least 10 characters long';
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+// ...existing code...
 
   const handleSubmit = async (e) => {
     e.preventDefault();
