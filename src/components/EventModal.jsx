@@ -439,11 +439,11 @@ const EventModal = ({
               placeholder="e.g., Welcome Back Mixer (minimum 3 characters)"
               disabled={loading || uploadingImage}
               minLength={3}
-              maxLength={255}
+              maxLength={30}
             />
             {errors.title && <span className="error">{errors.title}</span>}
             <small className="input-hint">
-              {formData.title.length}/255 characters{" "}
+              {formData.title.length}/30 characters{" "}
               {formData.title.length < 3 && formData.title.length > 0
                 ? "(minimum 3 required)"
                 : ""}
