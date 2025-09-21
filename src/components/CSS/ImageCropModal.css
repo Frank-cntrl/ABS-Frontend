@@ -1,4 +1,3 @@
-/* Image Crop Modal Styles */
 .crop-modal-overlay {
   position: fixed;
   top: 0;
@@ -7,15 +6,15 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.9);
   display: flex;
-  align-items: center; /* Center vertically */
+  align-items: center; 
   justify-content: center;
-  z-index: 99999; /* Higher than other modals */
-  padding: 0; /* Remove all padding - let the content handle positioning */
+  z-index: 99999; 
+  padding: 0; 
   box-sizing: border-box;
-  overflow: hidden; /* Prevent scrolling */
+  overflow: hidden; 
 }
 
 .crop-modal-content {
@@ -23,17 +22,17 @@
   border-radius: 20px;
   width: 90vw;
   max-width: 900px;
-  height: 85vh; /* Use percentage of viewport height */
+  height: 85vh; 
   height: 85dvh;
-  min-height: 500px; /* Minimum height */
-  max-height: 700px; /* Maximum height to ensure it fits */
+  min-height: 500px;
+  max-height: 700px; 
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(117, 56, 176, 0.4);
   animation: cropModalSlideIn 0.3s ease;
   position: relative;
-  overflow: hidden; /* Prevent any overflow */
-  margin: auto; /* Center it */
+  overflow: hidden; 
+  margin: auto;
 }
 
 .crop-modal-header {
@@ -44,7 +43,7 @@
   border-bottom: 2px solid #f0f0f0;
   background: white;
   border-radius: 20px 20px 0 0;
-  flex-shrink: 0; /* Don't allow shrinking */
+  flex-shrink: 0;
   z-index: 10;
 }
 
@@ -83,19 +82,19 @@
 }
 
 .crop-container {
-  padding: 1rem 2rem; /* Reduced padding */
+  padding: 1rem 2rem; 
   display: flex;
   justify-content: center;
   align-items: center;
   background: #f8f9fa;
-  flex: 1; /* Take up all available space between header and footer */
-  overflow: hidden; /* Prevent overflow */
-  min-height: 0; /* Allow flexbox to shrink this */
+  flex: 1; 
+  overflow: hidden;
+  min-height: 0; 
 }
 
 .crop-image {
   max-width: 100%;
-  max-height: 100%; /* Constrain to container height */
+  max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -105,14 +104,13 @@
   -moz-user-select: none;
 }
 
-/* React-image-crop styles with height constraints */
 .ReactCrop {
   display: inline-block;
   position: relative;
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: 100%; /* Constrain to container height */
+  max-height: 100%;
 }
 
 .ReactCrop__crop-selection {
@@ -145,7 +143,6 @@
   border-width: 1px;
 }
 
-/* Crop selection behavior */
 .ReactCrop__crop-selection:hover {
   cursor: move;
 }
@@ -157,7 +154,7 @@
   font-size: 0.9rem;
   font-style: italic;
   background: #f8f9fa;
-  flex-shrink: 0; /* Don't allow shrinking */
+  flex-shrink: 0;
   border-top: 1px solid #e9ecef;
 }
 
@@ -169,7 +166,7 @@
   border-top: 2px solid #f0f0f0;
   background: white;
   border-radius: 0 0 20px 20px;
-  flex-shrink: 0; /* Don't allow shrinking */
+  flex-shrink: 0;
   z-index: 10;
 }
 
@@ -218,7 +215,6 @@
   font-size: 1rem;
 }
 
-/* Crop button in main modals */
 .crop-image-btn {
   background: linear-gradient(135deg, #7538b0, #9966c7);
   color: white;
@@ -248,7 +244,6 @@
   box-shadow: none;
 }
 
-/* Animations */
 @keyframes cropModalSlideIn {
   from {
     opacity: 0;
@@ -260,17 +255,16 @@
   }
 }
 
-/* Desktop specific improvements */
 @media (min-width: 769px) {
   .crop-modal-content {
     width: 85vw;
-    height: 80vh; /* Use less height on desktop */
+    height: 80vh; 
     height: 80dvh;
-    max-height: 800px; /* Larger max height on desktop */
+    max-height: 800px; 
   }
 
   .crop-container {
-    padding: 1.5rem 3rem; /* Slightly more padding on desktop */
+    padding: 1.5rem 3rem; 
   }
 
   .crop-modal-header {
@@ -285,31 +279,29 @@
     padding: 1.5rem 3rem;
   }
 
-  /* Larger drag handles for desktop precision */
   .ReactCrop__drag-handle {
     width: 20px;
     height: 20px;
   }
 }
 
-/* Mobile responsive with better viewport handling */
 @media (max-width: 768px) {
   .crop-modal-overlay {
     height: 100vh;
-    height: 100dvh; /* Dynamic viewport for mobile */
-    min-height: -webkit-fill-available; /* iOS Safari fallback */
+    height: 100dvh; 
+    min-height: -webkit-fill-available;
   }
 
   .crop-modal-content {
     width: 95vw;
     height: 90vh;
     height: 90dvh;
-    max-height: 600px; /* Smaller max height on mobile */
+    max-height: 600px;
     min-height: 450px;
   }
 
   .crop-container {
-    padding: 1rem; /* Smaller padding on mobile */
+    padding: 1rem;
   }
 
   .crop-modal-header {
@@ -337,7 +329,6 @@
     padding: 1rem;
   }
 
-  /* Enhanced mobile crop handles */
   .ReactCrop__drag-handle {
     width: 24px;
     height: 24px;
@@ -350,12 +341,12 @@
     width: 98vw;
     height: 85vh;
     height: 85dvh;
-    max-height: 500px; /* Even smaller on tiny screens */
+    max-height: 500px;
     min-height: 400px;
   }
 
   .crop-container {
-    padding: 0.75rem; /* Minimal padding */
+    padding: 0.75rem;
   }
 
   .crop-modal-header {
@@ -375,7 +366,6 @@
     padding: 0.75rem 1rem;
   }
 
-  /* Larger touch targets for mobile */
   .ReactCrop__drag-handle {
     width: 28px;
     height: 28px;
@@ -383,7 +373,6 @@
   }
 }
 
-/* Fallback for browsers that don't support dvh */
 @supports not (height: 100dvh) {
   .crop-modal-overlay {
     height: 100vh;
@@ -412,7 +401,6 @@
   }
 }
 
-/* Focus styles for accessibility */
 .crop-modal-close:focus,
 .crop-cancel-btn:focus,
 .crop-apply-btn:focus,
@@ -421,27 +409,25 @@
   outline-offset: 2px;
 }
 
-/* High DPI display adjustments */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .ReactCrop__drag-handle {
-    border-width: 2px; /* Thinner borders on high DPI */
+    border-width: 2px; 
   }
 }
 
-/* Landscape orientation adjustments for mobile */
 @media (max-width: 768px) and (orientation: landscape) {
   .crop-modal-content {
-    height: 95vh; /* Use more of the viewport in landscape */
-    max-height: none; /* Remove max-height in landscape */
+    height: 95vh; 
+    max-height: none; 
   }
 
   .crop-container {
-    padding: 0.5rem 1rem; /* Reduce vertical padding in landscape */
+    padding: 0.5rem 1rem; 
   }
 
   .crop-modal-header,
   .crop-modal-actions {
-    padding: 1rem 1.5rem; /* Reduce vertical padding */
+    padding: 1rem 1.5rem; 
   }
 
   .crop-instructions {

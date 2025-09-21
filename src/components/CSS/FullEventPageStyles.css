@@ -15,7 +15,6 @@
   --danger-red: #dc3545;
 }
 
-/* Container */
 .full-event-container {
   width: 100vw;
   max-width: none;
@@ -32,7 +31,6 @@
   width: 100%;
 }
 
-/* Header */
 .event-header {
   display: flex;
   justify-content: space-between;
@@ -68,7 +66,6 @@
   font-size: 1.1rem !important;
 }
 
-/* Event Image */
 .event-image-container {
   position: relative;
   width: 100%;
@@ -99,7 +96,6 @@
   background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.2) 100%);
 }
 
-/* Event Details Card */
 .event-details-card {
   background: white;
   border-radius: 20px;
@@ -108,7 +104,6 @@
   margin-bottom: 2rem;
 }
 
-/* Title Section */
 .event-title-section {
   text-align: center;
   margin-bottom: 3rem;
@@ -161,7 +156,6 @@
   font-size: 0.95rem;
 }
 
-/* Info Sections */
 .info-section {
   margin-bottom: 2.5rem;
 }
@@ -197,7 +191,6 @@
   margin-bottom: 0;
 }
 
-/* RSVP Section */
 .rsvp-section {
   background: var(--light-gradient);
   padding: 2.5rem;
@@ -261,7 +254,6 @@
   transform: none;
 }
 
-/* Additional Info */
 .additional-info {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -298,7 +290,6 @@
   margin: 0;
 }
 
-/* Loading and Error States */
 .loading-state, .error-state {
   display: flex;
   flex-direction: column;
@@ -336,7 +327,6 @@
   line-height: 1.6;
 }
 
-/* Fade in animation for content */
 .fade-in {
   opacity: 0;
   animation: fadeInContent 0.6s ease forwards;
@@ -353,7 +343,6 @@
   }
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .full-event-container {
     padding: 1rem;
@@ -454,7 +443,6 @@
   }
 }
 
-/* Focus styles for accessibility */
 .back-button:focus,
 .share-button:focus,
 .rsvp-button:focus {
@@ -462,7 +450,6 @@
   outline-offset: 2px;
 }
 
-/* Smooth scrolling */
 @media (prefers-reduced-motion: no-preference) {
   * {
     scroll-behavior: smooth;

@@ -16,7 +16,6 @@
   --info-blue: #17a2b8;
 }
 
-/* Container */
 .user-page-container {
   width: 100vw;
   max-width: none;
@@ -35,7 +34,6 @@
   width: 100%;
 }
 
-/* Not Logged In State */
 .not-logged-in {
   display: flex;
   justify-content: center;
@@ -94,7 +92,6 @@
   color: var(--text-dark);
 }
 
-/* Profile Header */
 .profile-header {
   background: white;
   padding: 2.5rem;
@@ -150,7 +147,6 @@
   font-size: 1rem !important;
 }
 
-/* Admin Dashboard */
 .admin-dashboard {
   background: white;
   padding: 2.5rem;
@@ -185,7 +181,6 @@
   font-size: 1.5rem !important;
 }
 
-/* Feature Sections */
 .feature-section {
   margin-bottom: 3rem;
 }
@@ -245,7 +240,6 @@
   font-size: 0.95rem;
 }
 
-/* Permissions Section */
 .permissions-section {
   margin-bottom: 2rem;
 }
@@ -282,7 +276,6 @@
   font-size: 1.2rem !important;
 }
 
-/* Contact Section */
 .contact-section {
   background: white;
   padding: 2.5rem;
@@ -352,7 +345,6 @@
   line-height: 1.5;
 }
 
-/* Contact Info */
 .contact-info {
   background: var(--light-gradient);
   padding: 2rem;
@@ -425,7 +417,6 @@
   font-size: 1rem !important;
 }
 
-/* Regular User Info */
 .regular-user-info {
   background: white;
   padding: 2rem;
@@ -441,7 +432,6 @@
   margin: 0;
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .user-page-container {
     padding: 1rem;
@@ -570,7 +560,6 @@
   }
 }
 
-/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -588,13 +577,11 @@
   animation-delay: 0.2s;
 }
 
-/* Focus styles for accessibility */
 .copy-button:focus {
   outline: 3px solid var(--light-purple);
   outline-offset: 2px;
 }
 
-/* Smooth scrolling */
 @media (prefers-reduced-motion: no-preference) {
   * {
     scroll-behavior: smooth;

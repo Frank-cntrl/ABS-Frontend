@@ -1,16 +1,14 @@
-/* Main Navbar */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
-  z-index: 2000; /* Increase this */
+  z-index: 2000;
   background: linear-gradient(135deg, #7538b0, #9966c7);
   padding: 1rem 2rem;
 }
 
-/* Logo */
 .navbar-logo {
   height: 40px;
   width: auto;
@@ -24,7 +22,6 @@
   transform: scale(1.1);
 }
 
-/* Hamburger Menu */
 .hamburger {
   display: none;
   justify-content: center;
@@ -35,8 +32,8 @@
   padding: 0.5rem;
   border-radius: 8px;
   transition: background 0.3s ease;
-  z-index: 2002; /* Add high z-index */
-  position: relative; /* Add position */
+  z-index: 2002; 
+  position: relative; 
 }
 
 .hamburger:hover {
@@ -53,7 +50,6 @@
   transform: rotate(180deg);
 }
 
-/* Mobile Overlay */
 .mobile-overlay {
   position: fixed;
   top: 0;
@@ -61,7 +57,7 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2001; /* Increase this */
+  z-index: 2001;
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
@@ -72,7 +68,6 @@
   visibility: visible;
 }
 
-/* Navigation Menu */
 .nav-menu {
   display: flex;
   align-items: center;
@@ -97,7 +92,6 @@
   gap: 1rem;
 }
 
-/* Navigation Links and Buttons */
 .nav-link {
   display: flex;
   align-items: center;
@@ -108,8 +102,8 @@
   transition: all 0.3s ease;
   font-weight: 500;
   white-space: nowrap;
-  position: relative; /* Add this */
-  z-index: 2003; /* Add high z-index */
+  position: relative;
+  z-index: 2003; 
 }
 
 .nav-link:hover {
@@ -129,8 +123,8 @@
   transition: all 0.3s ease;
   font-weight: 500;
   font-size: 1rem;
-  position: relative; /* Add this */
-  z-index: 2003; /* Add high z-index */
+  position: relative; 
+  z-index: 2003; 
 }
 
 .nav-button:hover {
@@ -138,7 +132,6 @@
   transform: translateY(-2px);
 }
 
-/* Specific Button Styles */
 .login-btn {
   background: linear-gradient(135deg, #27ae60, #2ecc71);
   margin-left: 0.5rem;
@@ -158,21 +151,18 @@
   transform: translateY(-2px);
 }
 
-/* Icons */
 .nav-icon {
   margin-right: 0.5rem !important;
   font-size: 1.2rem !important;
   vertical-align: middle;
 }
 
-/* Auth Text */
 .auth-text {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 0.5rem;
 }
 
-/* Mobile Styles */
 @media (max-width: 768px) {
   .navbar {
     padding: 1rem;
@@ -188,7 +178,7 @@
     right: -100%;
     width: 300px;
     height: 100vh;
-    background: linear-gradient(135deg, #7538b0, #9966c7); /* Make sure this matches your navbar */
+    background: linear-gradient(135deg, #7538b0, #9966c7);
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
@@ -196,8 +186,8 @@
     transition: right 0.3s ease;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
     gap: 0;
-    z-index: 2002; /* High z-index */
-    overflow-y: auto; /* Allow scrolling if content is too tall */
+    z-index: 2002;
+    overflow-y: auto;
   }
 
   .nav-menu.active {
@@ -237,8 +227,8 @@
     justify-content: flex-start;
     margin: 0.25rem 0;
     padding: 1rem 0;
-    z-index: 2003; /* Ensure buttons are clickable */
-    pointer-events: auto; /* Explicitly enable pointer events */
+    z-index: 2003; 
+    pointer-events: auto;
   }
 
   .auth-text {
@@ -256,7 +246,6 @@
   }
 }
 
-/* Tablet Styles */
 @media (max-width: 1024px) and (min-width: 769px) {
   .navbar {
     padding: 1rem 1.5rem;
@@ -267,7 +256,6 @@
   }
 }
 
-/* Small Mobile */
 @media (max-width: 480px) {
   .navbar {
     padding: 0.75rem;

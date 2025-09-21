@@ -14,7 +14,6 @@
   --success-green: #28a745;
 }
 
-/* Events Container */
 .events-container {
   width: 100vw;
   max-width: none;
@@ -31,7 +30,6 @@
   width: 100%;
 }
 
-/* Events Header */
 .events-header {
   display: flex;
   justify-content: space-between;
@@ -73,7 +71,6 @@
   box-shadow: 0 8px 30px var(--shadow-hover);
 }
 
-/* Events Grid */
 .events-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -99,7 +96,6 @@
   color: var(--primary-purple);
 }
 
-/* Event Card - Base styles */
 .event-card {
   background: white;
   border-radius: 20px;
@@ -112,13 +108,11 @@
   cursor: pointer;
 }
 
-/* Admin card heights */
 .event-card.admin-card {
   height: 575px;
   max-height: 650px;
 }
 
-/* Regular user card heights */
 .event-card.user-card {
   height: 500px;
   max-height: 600px;
@@ -129,7 +123,6 @@
   box-shadow: 0 20px 60px rgba(117, 56, 176, 0.25);
 }
 
-/* Event Image Section */
 .modal-event-image {
   width: 100%;
   height: 190px;
@@ -182,7 +175,6 @@
   opacity: 0.1;
 }
 
-/* Event Content */
 .event-content {
   padding: 2rem;
   flex-grow: 1;
@@ -219,7 +211,6 @@
   margin: 0 auto;
 }
 
-/* Event Location - standalone styling */
 .event-location {
   display: flex;
   align-items: center;
@@ -239,7 +230,6 @@
   color: var(--medium-purple);
 }
 
-/* Event Actions */
 .event-actions {
   display: flex;
   gap: 0.75rem;
@@ -285,7 +275,6 @@
   box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
 }
 
-/* Loading State */
 .loading {
   display: flex;
   flex-direction: column;
@@ -312,7 +301,6 @@
   border-width: 2px;
 }
 
-/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -382,7 +370,6 @@
   color: white;
 }
 
-/* Form Styles */
 .modal-form {
   padding: 2rem;
 }
@@ -450,7 +437,6 @@
   border: 1px solid #f5c6cb;
 }
 
-/* Image Upload Styles */
 .image-upload-section {
   margin-bottom: 1rem;
 }
@@ -511,7 +497,6 @@
   transform: translateY(-1px);
 }
 
-/* Crop Button Section */
 .crop-button-section {
   margin-top: 1rem;
   text-align: center;
@@ -554,7 +539,6 @@
   font-style: italic;
 }
 
-/* Crop Status */
 .crop-status {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
@@ -592,7 +576,6 @@
   color: white;
 }
 
-/* Image Preview */
 .modal-image-preview {
   margin-top: 1rem;
   position: relative;
@@ -626,7 +609,6 @@
   font-weight: 600;
 }
 
-/* Upload Progress */
 .upload-progress {
   display: flex;
   align-items: center;
@@ -640,7 +622,6 @@
   font-weight: 600;
 }
 
-/* RSVP Preview */
 .rsvp-preview {
   margin-top: 0.75rem;
   padding: 0.75rem 1rem;
@@ -654,7 +635,6 @@
   font-weight: 500;
 }
 
-/* Modal Actions */
 .modal-actions {
   display: flex;
   gap: 1rem;
@@ -707,13 +687,11 @@
   box-shadow: 0 8px 25px var(--shadow-hover);
 }
 
-/* Icon Styles */
 .btn-icon, .label-icon, .modal-icon, .preview-icon, 
 .date-icon, .location-icon, .modal-preview-icon {
   font-size: 1rem !important;
 }
 
-/* Animations */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -741,12 +719,10 @@
   75% { transform: translateX(5px); }
 }
 
-/* Prevent body scroll when modal is open */
 body.modal-open {
   overflow: hidden;
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .events-container {
     padding: 1rem;
@@ -824,13 +800,11 @@ body.modal-open {
     padding: 1rem;
   }
 
-  /* Admin mobile card heights - INCREASED */
   .event-card.admin-card {
     height: 575px;
     max-height: 700px;
   }
 
-  /* Regular user mobile card heights */
   .event-card.user-card {
     height: 400px;
     max-height: 450px;
@@ -872,7 +846,6 @@ body.modal-open {
     padding: 1rem;
   }
 
-  /* Small mobile - same increased height as tablet */
   .event-card.admin-card {
     height: 575px;
     max-height: 700px;
@@ -893,7 +866,6 @@ body.modal-open {
   }
 }
 
-/* Focus styles for accessibility */
 .add-event-btn:focus,
 .submit-btn:focus,
 .cancel-btn:focus,
@@ -906,7 +878,6 @@ body.modal-open {
   outline-offset: 2px;
 }
 
-/* Smooth scrolling */
 @media (prefers-reduced-motion: no-preference) {
   * {
     scroll-behavior: smooth;
